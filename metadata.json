@@ -1,0 +1,6 @@
+{
+  "name": "TechTut by SendoLabs",
+  "description": "Dreamy, calm, and magical AI-powered study companion featuring Study Mode, Add-On Mode, Games, Ambient Music, and Account Progress.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

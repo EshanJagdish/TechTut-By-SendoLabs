@@ -1,0 +1,126 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-serif: 'Playfair Display', Georgia, serif;
+    --color-bg: #FAFAF9;
+    --color-text: #1C1917;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+}
+
+/* Whitish Orangish Minimal Clean card & panel utilities */
+.clean-card {
+  background-color: #FFFFFF;
+  border: 1px solid rgba(231, 229, 228, 0.85);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+}
+
+.clean-card-orange {
+  background-color: #FFFFFF;
+  border: 1px solid rgba(254, 215, 170, 0.8);
+  box-shadow: 0 4px 20px -2px rgba(249, 115, 22, 0.08);
+}
+
+.glass-panel {
+  background-color: #FFFFFF;
+  border: 1px solid rgba(231, 229, 228, 0.9);
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.04);
+}
+
+.glass-panel-subtle {
+  background-color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(231, 229, 228, 0.7);
+}
+
+.glass-pill {
+  background-color: #FFF7ED;
+  border: 1px solid #FFEDD5;
+  color: #C2410C;
+}
+
+/* Dreamy animations */
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(1deg);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.4;
+    filter: drop-shadow(0 0 15px rgba(167, 139, 250, 0.3));
+  }
+  50% {
+    opacity: 0.85;
+    filter: drop-shadow(0 0 25px rgba(192, 132, 252, 0.6));
+  }
+}
+
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+.animate-float-slow {
+  animation: floatSlow 6s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 4s ease-in-out infinite;
+}
+
+.animate-twinkle {
+  animation: twinkle 3s ease-in-out infinite;
+}
+
+/* Smooth clean warm scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F5F5F4;
+}
+::-webkit-scrollbar-thumb {
+  background: #FED7AA;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #FB923C;
+}
+
+/* Perspective for 3D flashcard flip */
+.perspective-1000 {
+  perspective: 1000px;
+}
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+.backface-hidden {
+  backface-visibility: hidden;
+}
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}

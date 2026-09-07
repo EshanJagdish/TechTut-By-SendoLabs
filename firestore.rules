@@ -1,0 +1,64 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default Deny Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    // User Profile Document
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId)
+        && incoming().name is string && incoming().name.size() <= 100
+        && incoming().xp is number
+        && incoming().stardust is number;
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+
+      // Flashcards Sub-collection
+      match /flashcards/{flashcardId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(flashcardId)
+          && incoming().front is string && incoming().front.size() <= 500
+          && incoming().back is string && incoming().back.size() <= 1000;
+        allow update, delete: if isOwner(userId) && isValidId(flashcardId);
+      }
+
+      // Solutions Sub-collection
+      match /solutions/{solutionId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(solutionId)
+          && incoming().question is string && incoming().question.size() <= 1000;
+        allow update, delete: if isOwner(userId) && isValidId(solutionId);
+      }
+
+      // Notes Sub-collection (Holding Notes & Google Keep integration)
+      match /notes/{noteId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(noteId)
+          && incoming().title is string && incoming().title.size() <= 200
+          && incoming().content is string && incoming().content.size() <= 5000;
+        allow update, delete: if isOwner(userId) && isValidId(noteId);
+      }
+    }
+  }
+}
