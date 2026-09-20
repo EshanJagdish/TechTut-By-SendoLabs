@@ -89,7 +89,7 @@ export const AccountSystemView: React.FC<AccountSystemViewProps> = ({
 
   // Email authentication form states
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
-  const [authEmail, setAuthEmail] = useState(userProfile.email || 'eshanjagdish@gmail.com');
+  const [authEmail, setAuthEmail] = useState(userProfile.email || '');
   const [authPassword, setAuthPassword] = useState('');
   const [authName, setAuthName] = useState(userProfile.name);
   const [showPassword, setShowPassword] = useState(false);
@@ -101,7 +101,7 @@ export const AccountSystemView: React.FC<AccountSystemViewProps> = ({
   const [isChangingEmail, setIsChangingEmail] = useState(false);
   const [newEmailInput, setNewEmailInput] = useState('');
   const [showResetModal, setShowResetModal] = useState(false);
-  const [resetEmailInput, setResetEmailInput] = useState(userProfile.email || 'eshanjagdish@gmail.com');
+  const [resetEmailInput, setResetEmailInput] = useState(userProfile.email || '');
   const [resetStatus, setResetStatus] = useState<string | null>(null);
 
   // Email study preferences state
@@ -133,7 +133,7 @@ export const AccountSystemView: React.FC<AccountSystemViewProps> = ({
   const currentLevelProgress = userProfile.xp % xpForNextLevel;
   const currentRankNumber = Math.floor(userProfile.xp / xpForNextLevel) + 1;
 
-  const currentEmail = firebaseUser?.email || userProfile.email || 'eshanjagdish@gmail.com';
+  const currentEmail = firebaseUser?.email || userProfile.email || '';
   const isEmailVerified = firebaseUser ? firebaseUser.emailVerified : (userProfile.emailVerified ?? true);
 
   const notify = (title: string, subtitle: string, icon = '✨') => {
@@ -413,12 +413,12 @@ export const AccountSystemView: React.FC<AccountSystemViewProps> = ({
                   className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-stone-50 hover:bg-stone-100 border border-stone-200 text-xs text-stone-700 transition-colors cursor-pointer"
                 >
                   <Mail className="w-3.5 h-3.5 text-orange-600" />
-                  <span className="font-mono">{currentEmail}</span>
+                  <span className="font-mono">{currentEmail || 'Account'}</span>
                 </button>
 
                 {isEmailVerified ? (
                   <span className="inline-flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium">
-                    <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Verified Scholar
+                    <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Verified Account
                   </span>
                 ) : (
                   <button
@@ -840,7 +840,11 @@ export const AccountSystemView: React.FC<AccountSystemViewProps> = ({
                 </div>
 
                 <p className="text-xs text-stone-500 leading-relaxed">
-                  Configure automated academic dispatches to <span className="text-orange-700 font-mono font-medium">{currentEmail}</span>:
+                  {currentEmail ? (
+                    <>Configure automated academic digests to <span className="text-orange-700 font-mono font-medium">{currentEmail}</span>:</>
+                  ) : (
+                    <>Sign in with your verified email account to enable academic digest notifications.</>
+                  )}
                 </p>
 
                 <div className="space-y-4">
@@ -1271,13 +1275,10 @@ export const AccountSystemView: React.FC<AccountSystemViewProps> = ({
               {/* CTA Button */}
               <div className="text-center pt-2">
                 <button
-                  onClick={() => {
-                    setPreviewEmailModal(false);
-                    notify("Test Email Simulated", `Study prompt dispatched to ${currentEmail}`, "🚀");
-                  }}
-                  className="px-6 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold shadow-xs cursor-pointer"
+                  onClick={() => setPreviewEmailModal(false)}
+                  className="px-6 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold shadow-xs cursor-pointer transition-colors"
                 >
-                  Send Sample Dispatch to My Inbox
+                  Close Digest Preview
                 </button>
               </div>
             </div>

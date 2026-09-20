@@ -10,7 +10,8 @@ import {
   Moon, 
   GraduationCap, 
   Palette,
-  ChevronDown
+  ChevronDown,
+  HelpCircle
 } from 'lucide-react';
 import { AppMode, DreamyTheme, EducationLevel } from '../types';
 
@@ -30,6 +31,7 @@ interface HeaderProps {
   streakDays?: number;
   userEmail?: string;
   isEmailVerified?: boolean;
+  onOpenMusicPopup?: () => void;
 }
 
 const LEVEL_LABELS: Record<EducationLevel, string> = {
@@ -64,6 +66,7 @@ export const Header: React.FC<HeaderProps> = ({
   streakDays,
   userEmail,
   isEmailVerified,
+  onOpenMusicPopup,
 }) => {
   const [isLevelOpen, setIsLevelOpen] = useState(false);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
@@ -142,16 +145,16 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
 
             <button
-              id="nav-music-mode"
-              onClick={() => onSelectMode('music')}
+              id="nav-quiz-mode"
+              onClick={() => onSelectMode('quiz')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                currentMode === 'music'
+                currentMode === 'quiz'
                   ? 'bg-orange-500 text-white shadow-xs'
                   : 'text-stone-600 hover:text-stone-900 hover:bg-white/80'
               }`}
             >
-              <Headphones className="w-3.5 h-3.5" />
-              <span>Music</span>
+              <HelpCircle className="w-3.5 h-3.5" />
+              <span>Quiz Arena</span>
             </button>
 
             <button
@@ -189,15 +192,15 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               id="nav-dev-blueprint"
               onClick={() => onSelectMode('dev_blueprint')}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 currentMode === 'dev_blueprint'
-                  ? 'bg-stone-800 text-white shadow-xs'
-                  : 'text-stone-500 hover:text-stone-800 hover:bg-white/80'
+                  ? 'bg-orange-500 text-white shadow-xs'
+                  : 'text-stone-600 hover:text-stone-900 hover:bg-white/80'
               }`}
-              title="TechTut Architecture Specs"
+              title="System Specs & Architecture"
             >
               <Code2 className="w-3.5 h-3.5" />
-              <span className="hidden lg:inline">Specs</span>
+              <span>Specs</span>
             </button>
           </nav>
 
@@ -263,6 +266,17 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="font-mono">{currentStreak}d</span>
             </div>
 
+            {/* Music Sanctuary Track Switcher Popup Trigger */}
+            <button
+              id="header-music-btn"
+              onClick={onOpenMusicPopup}
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-orange-50 hover:bg-orange-100 border border-orange-200 text-orange-800 text-xs font-semibold transition-all cursor-pointer shadow-xs active:scale-95"
+              title="Open Music Sanctuary & Change Tracks"
+            >
+              <Headphones className="w-3.5 h-3.5 text-orange-600 animate-pulse" />
+              <span className="hidden sm:inline">Music</span>
+            </button>
+
           </div>
         </div>
 
@@ -290,11 +304,19 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="text-[10px] mt-0.5">Games</span>
           </button>
           <button
-            onClick={() => onSelectMode('music')}
-            className={`flex flex-col items-center py-1 ${currentMode === 'music' ? 'text-orange-600 font-semibold' : 'text-stone-500'}`}
+            onClick={onOpenMusicPopup}
+            className="flex flex-col items-center py-1 text-stone-500 hover:text-orange-600"
+            title="Music Tracks & Sound Sanctuary"
           >
             <Headphones className="w-4 h-4" />
             <span className="text-[10px] mt-0.5">Music</span>
+          </button>
+          <button
+            onClick={() => onSelectMode('quiz')}
+            className={`flex flex-col items-center py-1 ${currentMode === 'quiz' ? 'text-orange-600 font-semibold' : 'text-stone-500'}`}
+          >
+            <HelpCircle className="w-4 h-4" />
+            <span className="text-[10px] mt-0.5">Quiz</span>
           </button>
           <button
             onClick={() => onSelectMode('account')}
@@ -309,6 +331,13 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <GraduationCap className="w-4 h-4" />
             <span className="text-[10px] mt-0.5">Workspace</span>
+          </button>
+          <button
+            onClick={() => onSelectMode('dev_blueprint')}
+            className={`flex flex-col items-center py-1 ${currentMode === 'dev_blueprint' ? 'text-orange-600 font-semibold' : 'text-stone-500'}`}
+          >
+            <Code2 className="w-4 h-4" />
+            <span className="text-[10px] mt-0.5">Specs</span>
           </button>
         </div>
 

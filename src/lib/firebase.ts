@@ -374,11 +374,22 @@ export const fetchClassroomCourseWork = async (token: string, courseId: string):
 };
 
 // 9. Google Drive API Search Integration
-export const searchDriveFiles = async (token: string, queryText: string = ''): Promise<DriveFile[]> => {
+export const searchDriveFiles = async (token: string, queryText: string = '', mimeTypeFilter?: string): Promise<DriveFile[]> => {
   let q = "trashed = false";
   if (queryText.trim()) {
     const escaped = queryText.replace(/'/g, "\\'");
     q += ` and name contains '${escaped}'`;
+  }
+  if (mimeTypeFilter) {
+    if (mimeTypeFilter === 'pdf') {
+      q += ` and mimeType = 'application/pdf'`;
+    } else if (mimeTypeFilter === 'document') {
+      q += ` and mimeType = 'application/vnd.google-apps.document'`;
+    } else if (mimeTypeFilter === 'presentation') {
+      q += ` and mimeType = 'application/vnd.google-apps.presentation'`;
+    } else if (mimeTypeFilter === 'spreadsheet') {
+      q += ` and mimeType = 'application/vnd.google-apps.spreadsheet'`;
+    }
   }
   const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&pageSize=20&fields=files(id,name,mimeType,webViewLink,iconLink,modifiedTime,size)&orderBy=modifiedTime desc`;
   

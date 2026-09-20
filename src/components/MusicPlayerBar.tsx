@@ -3,6 +3,7 @@ import {
   Play, 
   Pause, 
   SkipForward, 
+  SkipBack,
   Volume2, 
   VolumeX, 
   CloudRain, 
@@ -11,7 +12,10 @@ import {
   Music, 
   Sparkles,
   ChevronUp,
-  ChevronDown
+  ChevronDown,
+  X,
+  Headphones,
+  Maximize2
 } from 'lucide-react';
 import { dreamyAudio, AudioLayerState } from '../lib/audioSynthesizer';
 import { MusicTrack } from '../types';
@@ -89,11 +93,26 @@ export const MusicPlayerBar: React.FC<MusicPlayerBarProps> = ({
   const [volume, setVolume] = useState(dreamyAudio.volume);
   const [layers, setLayers] = useState<AudioLayerState>(dreamyAudio.layers);
   const [currentTrackId, setCurrentTrackId] = useState(dreamyAudio.currentTrackId);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isVenueOpen, setIsVenueOpen] = useState(() => {
+    try {
+      const saved = localStorage.getItem('techtut_music_venue_open');
+      return saved === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [showAiSuggestion, setShowAiSuggestion] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const currentTrack = TRACK_CATALOG.find(t => t.id === currentTrackId) || TRACK_CATALOG[0];
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('techtut_music_venue_open', isVenueOpen ? 'true' : 'false');
+    } catch (e) {
+      console.warn(e);
+    }
+  }, [isVenueOpen]);
 
   useEffect(() => {
     const unsub = dreamyAudio.subscribe((state: any) => {
@@ -172,6 +191,12 @@ export const MusicPlayerBar: React.FC<MusicPlayerBarProps> = ({
     dreamyAudio.setTrack(TRACK_CATALOG[nextIndex].id);
   };
 
+  const handlePrevTrack = () => {
+    const currentIndex = TRACK_CATALOG.findIndex(t => t.id === currentTrackId);
+    const prevIndex = (currentIndex - 1 + TRACK_CATALOG.length) % TRACK_CATALOG.length;
+    dreamyAudio.setTrack(TRACK_CATALOG[prevIndex].id);
+  };
+
   const handleApplySuggestion = () => {
     if (recommendedTrackId) {
       dreamyAudio.setTrack(recommendedTrackId);
@@ -182,21 +207,21 @@ export const MusicPlayerBar: React.FC<MusicPlayerBarProps> = ({
 
   return (
     <div id="techtut-music-dock" className="fixed bottom-0 left-0 right-0 z-30 pointer-events-none">
-      <div className="max-w-4xl mx-auto px-4 pb-3 sm:pb-5 pointer-events-auto">
+      <div className="max-w-4xl mx-auto px-3 sm:px-4 pb-3 sm:pb-4 pointer-events-auto">
         
         {/* AI Soundtrack Suggestion Toast */}
         {showAiSuggestion && recommendedTrackId && (
-          <div className="mb-2.5 p-3 sm:p-4 rounded-2xl bg-black/80 border border-indigo-400/40 backdrop-blur-xl shadow-2xl flex items-center justify-between gap-3 text-xs animate-float-slow">
-            <div className="flex items-center gap-2 text-indigo-200">
-              <Sparkles className="w-4 h-4 text-indigo-300 animate-twinkle flex-shrink-0" />
+          <div className="mb-2.5 p-3 sm:p-4 rounded-2xl bg-black/90 border border-orange-400/40 backdrop-blur-xl shadow-2xl flex items-center justify-between gap-3 text-xs animate-float-slow">
+            <div className="flex items-center gap-2 text-orange-200">
+              <Sparkles className="w-4 h-4 text-orange-400 animate-twinkle shrink-0" />
               <span>
                 <strong className="text-white">AI Soundscape Match:</strong> {recommendedReason || "This topic pairs harmoniously with a calming focus soundscape."}
               </span>
             </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={handleApplySuggestion}
-                className="px-3 py-1 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-[11px] transition-all shadow-sm cursor-pointer"
+                className="px-3 py-1 rounded-full bg-orange-500 hover:bg-orange-400 text-white font-medium text-[11px] transition-all shadow-xs cursor-pointer"
               >
                 Tune In
               </button>
@@ -210,172 +235,246 @@ export const MusicPlayerBar: React.FC<MusicPlayerBarProps> = ({
           </div>
         )}
 
-        {/* Main Floating Glass Player Dock */}
-        <div className="relative rounded-2xl sm:rounded-full bg-black/60 border border-white/10 backdrop-blur-xl shadow-2xl shadow-black/80 p-2.5 sm:px-4 sm:py-2.5 transition-all duration-300">
-          
-          <div className="flex items-center justify-between gap-3">
-            
-            {/* Left: Track info & Visualizer */}
-            <div className="flex items-center gap-3 min-w-0">
-              <button 
-                onClick={onOpenMusicSanctuary}
-                className="relative flex-shrink-0 w-10 h-10 rounded-xl sm:rounded-full bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-300 group shadow-md hover:bg-indigo-500/30 transition-all cursor-pointer"
-                title="Open Music Sanctuary"
-              >
-                <Music className="w-4 h-4 text-indigo-200 group-hover:scale-110 transition-transform" />
-              </button>
-
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <h4 className="text-xs sm:text-sm font-semibold text-white truncate">
-                    {currentTrack.title}
-                  </h4>
-                  <span className="hidden sm:inline-block text-[9px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-semibold border border-indigo-500/30 uppercase tracking-wider font-mono">
-                    {currentTrack.category.replace('_', ' ')}
-                  </span>
+        {/* CLOSED VENUE PILL: Compact, minimal height so user can "see more" */}
+        {!isVenueOpen ? (
+          <div className="flex items-center justify-end">
+            <div className="rounded-full bg-stone-900/90 border border-white/15 backdrop-blur-xl shadow-2xl p-1.5 pl-3 flex items-center gap-3 transition-all hover:bg-stone-900">
+              
+              {/* Music Indicator */}
+              <div className="flex items-center gap-2 min-w-0">
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-orange-400 shrink-0 ${isPlaying ? 'bg-orange-500/20 animate-pulse' : 'bg-white/10'}`}>
+                  <Headphones className="w-3.5 h-3.5" />
                 </div>
-                <p className="text-[11px] text-white/50 truncate max-w-[180px] sm:max-w-xs">
-                  {currentTrack.subtitle}
-                </p>
+                <div className="hidden sm:block min-w-0 text-left">
+                  <div className="text-xs font-semibold text-white truncate max-w-[140px]">
+                    {currentTrack.title}
+                  </div>
+                  <div className="text-[10px] text-white/50 truncate">
+                    {isPlaying ? 'Playing • Ambient' : 'Paused'}
+                  </div>
+                </div>
               </div>
 
-              {/* Waveform Canvas */}
-              <div className="hidden sm:block ml-1">
-                <canvas ref={canvasRef} width={60} height={22} className="rounded" />
-              </div>
-            </div>
-
-            {/* Middle: Controls */}
-            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+              {/* Quick Play/Pause */}
               <button
-                id="music-play-pause-btn"
                 onClick={() => dreamyAudio.togglePlay()}
-                className="w-10 h-10 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/30 transition-transform active:scale-95 cursor-pointer"
+                className="w-7 h-7 rounded-full bg-orange-500 hover:bg-orange-400 text-white flex items-center justify-center transition-transform active:scale-95 cursor-pointer shrink-0"
                 title={isPlaying ? "Pause Ambient Sound" : "Play Ambient Sound"}
               >
-                {isPlaying ? <Pause className="w-4 h-4 fill-white" /> : <Play className="w-4 h-4 fill-white ml-0.5" />}
+                {isPlaying ? <Pause className="w-3.5 h-3.5 fill-white" /> : <Play className="w-3.5 h-3.5 fill-white ml-0.5" />}
               </button>
 
+              {/* OPEN VENUE DROPDOWN TRIGGER */}
               <button
-                id="music-next-btn"
-                onClick={handleNextTrack}
-                className="p-2 rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-                title="Next Dreamy Track"
+                id="open-music-venue-btn"
+                onClick={() => setIsVenueOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white font-medium text-xs transition-colors cursor-pointer"
+                title="Open Music Dropdown Venue"
               >
-                <SkipForward className="w-4 h-4" />
+                <Music className="w-3 h-3 text-orange-400" />
+                <span>Music Venue</span>
+                <ChevronUp className="w-3.5 h-3.5 text-white/70" />
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* OPEN DROPDOWN VENUE: Full interactive music venue with "Close Venue (See More)" */
+          <div 
+            id="music-dropdown-venue"
+            className="rounded-3xl bg-stone-950/95 border border-white/15 backdrop-blur-2xl shadow-2xl p-4 sm:p-5 space-y-4 transition-all duration-300 animate-in fade-in slide-in-from-bottom-4"
+          >
+            
+            {/* Venue Header: Title & "Close Venue (See More)" Button */}
+            <div className="flex items-center justify-between gap-3 pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-orange-500/20 border border-orange-500/30 text-orange-400 shrink-0">
+                  <Headphones className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-xs sm:text-sm font-semibold text-white flex items-center gap-2">
+                    <span>Study Sound Sanctuary • Ambient Music Venue</span>
+                    <span className="text-[9px] px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-300 font-mono">
+                      Procedural Audio
+                    </span>
+                  </h3>
+                  <p className="text-[11px] text-white/50">
+                    432Hz ambient chord swells, rain noise, and 40Hz binaural focus beats
+                  </p>
+                </div>
+              </div>
+
+              {/* CLOSE VENUE BUTTON: Allows user to close it to see more! */}
+              <button
+                id="close-music-venue-btn"
+                onClick={() => setIsVenueOpen(false)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white/90 hover:text-white text-xs font-semibold transition-colors cursor-pointer shrink-0"
+                title="Close venue to see more screen area"
+              >
+                <span>Close to see more</span>
+                <ChevronDown className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Right: Ambient Layer Toggles & Volume */}
-            <div className="hidden md:flex items-center gap-3">
+            {/* Current Track Playback & Waveform */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               
-              {/* Layer Toggles */}
-              <div className="flex items-center gap-1 bg-black/40 p-1 rounded-full border border-white/10 text-xs">
-                <button
-                  onClick={() => dreamyAudio.toggleLayer('chimes')}
-                  className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] transition-all cursor-pointer ${
-                    layers.chimes ? 'bg-indigo-500/20 border border-indigo-400/40 text-indigo-200 font-medium' : 'text-white/40 hover:text-white/70'
-                  }`}
-                  title="Celestial Pentatonic Chimes"
+              {/* Track Details & Visualizer */}
+              <div className="flex items-center gap-3 min-w-0">
+                <button 
+                  onClick={onOpenMusicSanctuary}
+                  className="shrink-0 w-11 h-11 rounded-2xl bg-orange-500/20 border border-orange-400/30 flex items-center justify-center text-orange-300 group shadow-md hover:bg-orange-500/30 transition-all cursor-pointer"
+                  title="Open Full Sound Sanctuary"
                 >
-                  <Bell className="w-3 h-3" />
-                  <span>Chimes</span>
+                  <Music className="w-4 h-4 text-orange-300 group-hover:scale-110 transition-transform" />
+                </button>
+
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-sm font-semibold text-white truncate">
+                      {currentTrack.title}
+                    </h4>
+                    <span className="text-[9px] px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-300 font-semibold border border-orange-500/30 uppercase tracking-wider font-mono">
+                      {currentTrack.category.replace('_', ' ')}
+                    </span>
+                  </div>
+                  <p className="text-xs text-white/50 truncate max-w-sm">
+                    {currentTrack.subtitle}
+                  </p>
+                </div>
+
+                {/* Animated Waveform Canvas */}
+                <div className="hidden sm:block ml-2">
+                  <canvas ref={canvasRef} width={70} height={24} className="rounded" />
+                </div>
+              </div>
+
+              {/* Playback Controls */}
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={handlePrevTrack}
+                  className="p-2 rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                  title="Previous Track"
+                >
+                  <SkipBack className="w-4 h-4" />
                 </button>
 
                 <button
-                  onClick={() => dreamyAudio.toggleLayer('rain')}
-                  className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] transition-all cursor-pointer ${
-                    layers.rain ? 'bg-cyan-500/20 border border-cyan-400/40 text-cyan-200 font-medium' : 'text-white/40 hover:text-white/70'
-                  }`}
-                  title="Soft Procedural Rain Noise"
+                  id="music-venue-play-pause-btn"
+                  onClick={() => dreamyAudio.togglePlay()}
+                  className="w-10 h-10 rounded-full bg-orange-500 hover:bg-orange-400 text-white flex items-center justify-center shadow-lg shadow-orange-500/30 transition-transform active:scale-95 cursor-pointer"
+                  title={isPlaying ? "Pause Ambient Sound" : "Play Ambient Sound"}
                 >
-                  <CloudRain className="w-3 h-3" />
-                  <span>Rain</span>
+                  {isPlaying ? <Pause className="w-4 h-4 fill-white" /> : <Play className="w-4 h-4 fill-white ml-0.5" />}
                 </button>
 
                 <button
-                  onClick={() => dreamyAudio.toggleLayer('binaural')}
-                  className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] transition-all cursor-pointer ${
-                    layers.binaural ? 'bg-fuchsia-500/20 border border-fuchsia-400/40 text-fuchsia-200 font-medium' : 'text-white/40 hover:text-white/70'
-                  }`}
-                  title="40Hz Gamma Focus Frequency"
+                  id="music-venue-next-btn"
+                  onClick={handleNextTrack}
+                  className="p-2 rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                  title="Next Track"
                 >
-                  <Activity className="w-3 h-3" />
-                  <span>40Hz</span>
+                  <SkipForward className="w-4 h-4" />
                 </button>
               </div>
 
-              {/* Volume Slider */}
-              <div className="flex items-center gap-1.5 w-24">
-                <button
-                  onClick={() => dreamyAudio.setVolume(volume > 0 ? 0 : 0.5)}
-                  className="text-white/50 hover:text-white cursor-pointer"
-                >
-                  {volume === 0 ? <VolumeX className="w-3.5 h-3.5 text-white/30" /> : <Volume2 className="w-3.5 h-3.5" />}
-                </button>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.05"
-                  value={volume}
-                  onChange={(e) => dreamyAudio.setVolume(parseFloat(e.target.value))}
-                  className="w-full h-1 bg-black/40 border border-white/10 rounded-lg appearance-none cursor-pointer accent-indigo-400"
-                />
+              {/* Ambient Layers & Master Volume */}
+              <div className="flex items-center gap-3">
+                {/* Layer Toggles */}
+                <div className="flex items-center gap-1 bg-black/50 p-1 rounded-full border border-white/10 text-xs">
+                  <button
+                    onClick={() => dreamyAudio.toggleLayer('chimes')}
+                    className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] transition-all cursor-pointer ${
+                      layers.chimes ? 'bg-orange-500/20 border border-orange-400/40 text-orange-200 font-medium' : 'text-white/40 hover:text-white/70'
+                    }`}
+                    title="Celestial Pentatonic Chimes"
+                  >
+                    <Bell className="w-3 h-3" />
+                    <span>Chimes</span>
+                  </button>
+
+                  <button
+                    onClick={() => dreamyAudio.toggleLayer('rain')}
+                    className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] transition-all cursor-pointer ${
+                      layers.rain ? 'bg-cyan-500/20 border border-cyan-400/40 text-cyan-200 font-medium' : 'text-white/40 hover:text-white/70'
+                    }`}
+                    title="Soft Procedural Rain Noise"
+                  >
+                    <CloudRain className="w-3 h-3" />
+                    <span>Rain</span>
+                  </button>
+
+                  <button
+                    onClick={() => dreamyAudio.toggleLayer('binaural')}
+                    className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] transition-all cursor-pointer ${
+                      layers.binaural ? 'bg-amber-500/20 border border-amber-400/40 text-amber-200 font-medium' : 'text-white/40 hover:text-white/70'
+                    }`}
+                    title="40Hz Gamma Focus Frequency"
+                  >
+                    <Activity className="w-3 h-3" />
+                    <span>40Hz</span>
+                  </button>
+                </div>
+
+                {/* Volume Slider */}
+                <div className="flex items-center gap-1.5 w-24">
+                  <button
+                    onClick={() => dreamyAudio.setVolume(volume > 0 ? 0 : 0.5)}
+                    className="text-white/50 hover:text-white cursor-pointer"
+                  >
+                    {volume === 0 ? <VolumeX className="w-3.5 h-3.5 text-white/30" /> : <Volume2 className="w-3.5 h-3.5" />}
+                  </button>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value={volume}
+                    onChange={(e) => dreamyAudio.setVolume(parseFloat(e.target.value))}
+                    className="w-full h-1 bg-black/40 border border-white/10 rounded-lg appearance-none cursor-pointer accent-orange-400"
+                  />
+                </div>
               </div>
 
             </div>
 
-            {/* Expand / Collapse toggle for mobile */}
-            <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="md:hidden p-1.5 text-white/50 hover:text-white"
-            >
-              {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
-            </button>
+            {/* Quick Track Switcher Chips in Venue */}
+            <div className="pt-2 border-t border-white/10 flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+                <span className="text-[10px] uppercase font-semibold text-white/40 tracking-wider mr-1 shrink-0">
+                  Playlists:
+                </span>
+                {TRACK_CATALOG.map((track) => (
+                  <button
+                    key={track.id}
+                    onClick={() => {
+                      dreamyAudio.setTrack(track.id);
+                      if (!isPlaying) dreamyAudio.play();
+                    }}
+                    className={`px-2.5 py-1 rounded-xl text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${
+                      track.id === currentTrackId
+                        ? 'bg-orange-500 text-white shadow-xs'
+                        : 'bg-white/5 hover:bg-white/10 text-white/70 border border-white/5'
+                    }`}
+                  >
+                    {track.title}
+                  </button>
+                ))}
+              </div>
+
+              {onOpenMusicSanctuary && (
+                <button
+                  onClick={onOpenMusicSanctuary}
+                  className="text-xs text-orange-400 hover:text-orange-300 font-medium flex items-center gap-1 cursor-pointer"
+                >
+                  <span>Full Screen Sanctuary</span>
+                  <Maximize2 className="w-3 h-3" />
+                </button>
+              )}
+            </div>
 
           </div>
+        )}
 
-          {/* Mobile Expanded Layer Controls */}
-          {isExpanded && (
-            <div className="mt-3 pt-3 border-t border-white/10 md:hidden flex flex-wrap items-center justify-between gap-2 text-xs">
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={() => dreamyAudio.toggleLayer('chimes')}
-                  className={`px-2.5 py-1 rounded-full text-[11px] ${layers.chimes ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30' : 'text-white/50'}`}
-                >
-                  Bell Chimes
-                </button>
-                <button
-                  onClick={() => dreamyAudio.toggleLayer('rain')}
-                  className={`px-2.5 py-1 rounded-full text-[11px] ${layers.rain ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30' : 'text-white/50'}`}
-                >
-                  Rain
-                </button>
-                <button
-                  onClick={() => dreamyAudio.toggleLayer('binaural')}
-                  className={`px-2.5 py-1 rounded-full text-[11px] ${layers.binaural ? 'bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30' : 'text-white/50'}`}
-                >
-                  40Hz Tone
-                </button>
-              </div>
-
-              <div className="flex items-center gap-2 w-32">
-                <Volume2 className="w-3.5 h-3.5 text-white/50" />
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.05"
-                  value={volume}
-                  onChange={(e) => dreamyAudio.setVolume(parseFloat(e.target.value))}
-                  className="w-full h-1 bg-black/40 border border-white/10 rounded-lg appearance-none cursor-pointer accent-indigo-400"
-                />
-              </div>
-            </div>
-          )}
-
-        </div>
       </div>
     </div>
   );

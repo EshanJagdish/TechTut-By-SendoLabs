@@ -8,7 +8,6 @@ import {
   GraduationCap, 
   CheckCircle2, 
   ShieldCheck, 
-  Compass,
   AlertCircle,
   Eye,
   EyeOff,
@@ -42,11 +41,11 @@ const LEVEL_OPTIONS: { id: EducationLevel; label: string; sub: string }[] = [
 
 export const RegistrationPortal: React.FC<RegistrationPortalProps> = ({
   onEnterApp,
-  defaultEmail = 'eshanjagdish@gmail.com',
+  defaultEmail = '',
   defaultLevel = 'college'
 }) => {
-  const [authMode, setAuthMode] = useState<'register' | 'signin'>('register');
-  const [name, setName] = useState('Eshan Scholar');
+  const [authMode, setAuthMode] = useState<'register' | 'signin'>('signin');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState(defaultEmail);
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -58,62 +57,54 @@ export const RegistrationPortal: React.FC<RegistrationPortalProps> = ({
     e.preventDefault();
     setStatusMessage(null);
 
-    if (!email || !email.includes('@')) {
+    const cleanEmail = email.trim();
+    if (!cleanEmail || !cleanEmail.includes('@')) {
       setStatusMessage({ type: 'error', text: 'Please enter a valid email address.' });
       return;
     }
 
     if (password.length < 6) {
-      setStatusMessage({ type: 'error', text: 'Password should be at least 6 characters.' });
+      setStatusMessage({ type: 'error', text: 'Password must be at least 6 characters for security.' });
       return;
     }
 
     setLoading(true);
     try {
-      // Create Firebase Auth account if available
-      let firebaseUser = null;
-      try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        firebaseUser = userCredential.user;
-        // Trigger real verification email
+      const userCredential = await createUserWithEmailAndPassword(auth, cleanEmail, password);
+      const firebaseUser = userCredential.user;
+      
+      if (firebaseUser) {
         await sendEmailVerification(firebaseUser).catch(console.warn);
-      } catch (fbErr: any) {
-        // If already in use, advise sign in or continue smoothly
-        if (fbErr.code === 'auth/email-already-in-use') {
-          setStatusMessage({ 
-            type: 'info', 
-            text: 'Account already exists for this email. Signing you in...' 
-          });
-          const signinCred = await signInWithEmailAndPassword(auth, email, password);
-          firebaseUser = signinCred.user;
-        } else {
-          console.warn("Firebase Auth notice:", fbErr.message);
-        }
       }
 
       setStatusMessage({ 
         type: 'success', 
-        text: `Welcome to TechTut, ${name || 'Scholar'}! Directing to your study sanctuary...` 
+        text: `Account created successfully! Welcome to TechTut!` 
       });
 
       setTimeout(() => {
         onEnterApp({
-          name: name || 'Scholar',
-          email,
+          id: firebaseUser.uid,
+          name: name.trim() || 'Scholar',
+          email: firebaseUser.email || cleanEmail,
           level,
-          emailVerified: firebaseUser?.emailVerified ?? false
+          emailVerified: firebaseUser.emailVerified ?? false
         });
       }, 700);
 
-    } catch (err: any) {
-      console.warn("Registration error fallback:", err);
-      // Seamless scholar fallback
-      onEnterApp({
-        name: name || 'Scholar',
-        email,
-        level,
-        emailVerified: false
-      });
+    } catch (fbErr: any) {
+      console.error("Registration security rejection:", fbErr);
+      let errorMsg = "Unable to create account. Please try again.";
+      if (fbErr.code === 'auth/email-already-in-use') {
+        errorMsg = 'An account with this email already exists. Switch to "Sign In" and enter your password.';
+      } else if (fbErr.code === 'auth/weak-password') {
+        errorMsg = 'Password is too weak. Please use at least 6 characters with letters/numbers.';
+      } else if (fbErr.code === 'auth/invalid-email') {
+        errorMsg = 'The email address is invalid.';
+      } else if (fbErr.message) {
+        errorMsg = fbErr.message;
+      }
+      setStatusMessage({ type: 'error', text: errorMsg });
     } finally {
       setLoading(false);
     }
@@ -123,40 +114,45 @@ export const RegistrationPortal: React.FC<RegistrationPortalProps> = ({
     e.preventDefault();
     setStatusMessage(null);
 
-    if (!email || !email.includes('@')) {
+    const cleanEmail = email.trim();
+    if (!cleanEmail || !cleanEmail.includes('@')) {
       setStatusMessage({ type: 'error', text: 'Please enter a valid email address.' });
       return;
     }
 
     if (!password) {
-      setStatusMessage({ type: 'error', text: 'Please enter your password.' });
+      setStatusMessage({ type: 'error', text: 'Please enter your account password.' });
       return;
     }
 
     setLoading(true);
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      setStatusMessage({ type: 'success', text: 'Authenticated! Entering TechTut...' });
+      const userCredential = await signInWithEmailAndPassword(auth, cleanEmail, password);
+      const authenticatedUser = userCredential.user;
+
+      setStatusMessage({ type: 'success', text: 'Identity verified. Entering TechTut sanctuary...' });
       setTimeout(() => {
         onEnterApp({
-          email: userCredential.user.email || email,
-          name: userCredential.user.displayName || name,
-          emailVerified: userCredential.user.emailVerified
+          id: authenticatedUser.uid,
+          email: authenticatedUser.email || cleanEmail,
+          name: authenticatedUser.displayName || name || 'Scholar',
+          emailVerified: authenticatedUser.emailVerified
         });
       }, 600);
     } catch (err: any) {
-      console.warn("Sign-in fallback:", err);
-      // If mock/demo credentials or network, grant entry smoothly with clear feedback
-      setStatusMessage({ 
-        type: 'info', 
-        text: 'Credentials verified in Scholar Grimoire. Welcome back!' 
-      });
-      setTimeout(() => {
-        onEnterApp({
-          email,
-          name: name || 'Scholar'
-        });
-      }, 700);
+      console.error("Authentication failed:", err);
+      let errorMsg = "Access denied: Invalid credentials.";
+      if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        errorMsg = "Incorrect password. Access denied to protect this account.";
+      } else if (err.code === 'auth/user-not-found') {
+        errorMsg = "No account found with this email. Switch to 'Create Account' to register.";
+      } else if (err.code === 'auth/invalid-email') {
+        errorMsg = "Please enter a valid email address.";
+      } else if (err.code === 'auth/too-many-requests') {
+        errorMsg = "Too many failed attempts. Access temporarily restricted. Please reset your password.";
+      }
+      // CRITICAL: NEVER ALLOW ENTRY ON FAILED PASSWORD!
+      setStatusMessage({ type: 'error', text: errorMsg });
     } finally {
       setLoading(false);
     }
@@ -167,45 +163,49 @@ export const RegistrationPortal: React.FC<RegistrationPortalProps> = ({
     setStatusMessage(null);
     try {
       const result = await signInWithPopup(auth, googleProvider);
-      setStatusMessage({ type: 'success', text: `Signed in as ${result.user.displayName || result.user.email}! Welcome!` });
-      setTimeout(() => {
-        onEnterApp({
-          name: result.user.displayName || 'Scholar',
-          email: result.user.email || email,
-          emailVerified: result.user.emailVerified,
-          avatar: '🦉'
-        });
-      }, 600);
+      if (result?.user) {
+        setStatusMessage({ type: 'success', text: `Authenticated securely as ${result.user.email}!` });
+        setTimeout(() => {
+          onEnterApp({
+            id: result.user.uid,
+            name: result.user.displayName || 'Scholar',
+            email: result.user.email || '',
+            emailVerified: result.user.emailVerified,
+            avatar: '🦉'
+          });
+        }, 600);
+      }
     } catch (err: any) {
-      console.warn("Google sign-in notice:", err);
-      setStatusMessage({ type: 'info', text: 'Continuing with Google Scholar identity.' });
-      setTimeout(() => {
-        onEnterApp({
-          email,
-          name: name || 'Scholar'
+      console.error("Google sign-in error:", err);
+      if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
+        setStatusMessage({ 
+          type: 'error', 
+          text: err.message || 'Google authentication was not completed. Please try again or use email.' 
         });
-      }, 600);
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const handleForgotPassword = async () => {
-    if (!email || !email.includes('@')) {
-      setStatusMessage({ type: 'error', text: 'Please specify your email address above first.' });
+    const cleanEmail = email.trim();
+    if (!cleanEmail || !cleanEmail.includes('@')) {
+      setStatusMessage({ type: 'error', text: 'Please type your account email in the box above first.' });
       return;
     }
     setLoading(true);
     try {
-      await sendPasswordResetEmail(auth, email);
+      await sendPasswordResetEmail(auth, cleanEmail);
       setStatusMessage({ 
         type: 'success', 
-        text: `Official password reset instructions dispatched by Google/Firebase to ${email}. Please check your inbox!` 
+        text: `Password reset email dispatched to ${cleanEmail}. Please check your inbox and spam folder.` 
       });
     } catch (err: any) {
+      console.error("Reset email error:", err);
       setStatusMessage({ 
-        type: 'info', 
-        text: `Password reset dispatched for ${email}. Check inbox & spam folder.` 
+        type: 'error', 
+        text: err.message || 'Could not send reset email. Verify that the email is registered.' 
       });
     } finally {
       setLoading(false);
@@ -413,8 +413,8 @@ export const RegistrationPortal: React.FC<RegistrationPortalProps> = ({
             </span>
           </div>
 
-          {/* Google & Fast Guest Access */}
-          <div className="space-y-2.5">
+          {/* Google Sign In */}
+          <div>
             <button
               type="button"
               onClick={handleGoogleSignIn}
@@ -428,15 +428,6 @@ export const RegistrationPortal: React.FC<RegistrationPortalProps> = ({
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
               </svg>
               <span>Continue with Google Account</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onEnterApp({ name: 'Guest Scholar', email, level })}
-              className="w-full py-2.5 px-4 bg-orange-50/50 hover:bg-orange-50 text-orange-800 text-xs font-semibold rounded-xl border border-orange-200/80 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-            >
-              <Compass className="w-3.5 h-3.5 text-orange-600" />
-              <span>Quick Scholar Preview (Explore Directly)</span>
             </button>
           </div>
 

@@ -6,16 +6,19 @@ import { StudyModeView } from './components/StudyModeView';
 import { AddOnModeView } from './components/AddOnModeView';
 import { GameSystemView, ALL_BADGES } from './components/GameSystemView';
 import { MusicSystemView } from './components/MusicSystemView';
+import { MusicPopupModal } from './components/MusicPopupModal';
 import { AccountSystemView } from './components/AccountSystemView';
 import { DevBlueprintView } from './components/DevBlueprintView';
 import { WorkspaceHubView } from './components/WorkspaceHubView';
+import { QuizArenaView } from './components/QuizArenaView';
 import { RegistrationPortal } from './components/RegistrationPortal';
 import { 
   auth,
   initAuth, 
   loadUserProfileFromFirestore, 
   syncUserProfileToFirestore, 
-  saveFlashcardToFirestore 
+  saveFlashcardToFirestore,
+  signOutUser
 } from './lib/firebase';
 import { 
   AppMode, 
@@ -30,10 +33,10 @@ import {
 import { Sparkles, Award } from 'lucide-react';
 
 const INITIAL_PROFILE: UserProfile = {
-  id: 'stargazer_user_1',
-  name: 'Aria Vance',
-  email: 'eshanjagdish@gmail.com',
-  emailVerified: true,
+  id: 'scholar_init',
+  name: 'Scholar',
+  email: '',
+  emailVerified: false,
   emailPreferences: {
     dailyStudyReminder: true,
     weeklyProgressDigest: true,
@@ -41,7 +44,7 @@ const INITIAL_PROFILE: UserProfile = {
     reminderTime: '08:00'
   },
   avatar: '🦉',
-  title: 'Luna Scholar of SendoLabs',
+  title: 'Scholar of TechTut',
   level: 'college',
   theme: 'aurora_violet',
   xp: 380,
@@ -142,31 +145,42 @@ export default function App() {
 
   // Reward Toast Notification state
   const [toastMessage, setToastMessage] = useState<{ title: string; subtitle: string; icon?: string } | null>(null);
+  const [isMusicPopupOpen, setIsMusicPopupOpen] = useState<boolean>(false);
 
   // Sync with Firebase Firestore on boot & login
   useEffect(() => {
-    const unsubscribe = initAuth((firebaseUser) => {
-      loadUserProfileFromFirestore(firebaseUser.uid).then(cloudProfile => {
-        if (cloudProfile) {
-          setUserProfile(prev => ({
-            ...prev,
-            id: firebaseUser.uid,
-            name: cloudProfile.name || firebaseUser.displayName || prev.name,
-            email: firebaseUser.email || cloudProfile.email || prev.email,
-            emailVerified: firebaseUser.emailVerified ?? cloudProfile.emailVerified ?? prev.emailVerified,
-            emailPreferences: cloudProfile.emailPreferences || prev.emailPreferences,
-            avatar: cloudProfile.avatar || prev.avatar,
-            xp: cloudProfile.xp !== undefined ? cloudProfile.xp : prev.xp,
-            stardust: cloudProfile.stardust !== undefined ? cloudProfile.stardust : prev.stardust,
-            level: cloudProfile.level || prev.level,
-            theme: cloudProfile.theme || prev.theme,
-            currentStreak: cloudProfile.currentStreak || prev.currentStreak,
-          }));
-        } else {
-          syncUserProfileToFirestore(firebaseUser, userProfile).catch(console.warn);
-        }
-      }).catch(console.warn);
-    });
+    const unsubscribe = initAuth(
+      (firebaseUser) => {
+        setHasEnteredTechTut(true);
+        localStorage.setItem('techtut_entered', 'true');
+        loadUserProfileFromFirestore(firebaseUser.uid).then(cloudProfile => {
+          if (cloudProfile) {
+            setUserProfile(prev => ({
+              ...prev,
+              id: firebaseUser.uid,
+              name: cloudProfile.name || firebaseUser.displayName || prev.name,
+              email: firebaseUser.email || cloudProfile.email || prev.email,
+              emailVerified: firebaseUser.emailVerified ?? cloudProfile.emailVerified ?? prev.emailVerified,
+              emailPreferences: cloudProfile.emailPreferences || prev.emailPreferences,
+              avatar: cloudProfile.avatar || prev.avatar,
+              xp: cloudProfile.xp !== undefined ? cloudProfile.xp : prev.xp,
+              stardust: cloudProfile.stardust !== undefined ? cloudProfile.stardust : prev.stardust,
+              level: cloudProfile.level || prev.level,
+              theme: cloudProfile.theme || prev.theme,
+              currentStreak: cloudProfile.currentStreak || prev.currentStreak,
+            }));
+          } else {
+            syncUserProfileToFirestore(firebaseUser, userProfile).catch(console.warn);
+          }
+        }).catch(console.warn);
+      },
+      () => {
+        // No authenticated session: require sign-in / registration (no guest bypass)
+        setHasEnteredTechTut(false);
+        localStorage.removeItem('techtut_entered');
+        setUserProfile(INITIAL_PROFILE);
+      }
+    );
     return () => unsubscribe();
   }, []);
 
@@ -175,6 +189,17 @@ export default function App() {
     setTimeout(() => {
       setToastMessage(null);
     }, 3500);
+  };
+
+  const handleSwitchAccount = async () => {
+    try {
+      await signOutUser();
+    } catch (err) {
+      console.warn("Sign out error:", err);
+    }
+    localStorage.removeItem('techtut_entered');
+    setUserProfile(INITIAL_PROFILE);
+    setHasEnteredTechTut(false);
   };
 
   const handleImportToStudy = (query: string, subject?: string) => {
@@ -358,6 +383,7 @@ export default function App() {
         onSelectTheme={handleThemeChange}
         userEmail={userProfile.email}
         isEmailVerified={userProfile.emailVerified}
+        onOpenMusicPopup={() => setIsMusicPopupOpen(true)}
       />
 
       {/* Floating Dynamic Reward Toast */}
@@ -423,7 +449,18 @@ export default function App() {
         )}
 
         {currentMode === 'music' && (
-          <MusicSystemView />
+          <StudyModeView
+            educationLevel={userProfile.level}
+            initialQuery={workspaceStudyQuery}
+            initialSubject={workspaceStudySubject}
+            onActivateAddOn={handleActivateAddOnFromStudy}
+            onSaveFlashcard={handleSaveFlashcard}
+            onSaveSolution={handleSaveSolution}
+            onAwardXpAndStardust={handleAwardReward}
+            onOpenWorkspace={(tab) => setCurrentMode('workspace')}
+            savedFlashcardIds={savedFlashcardIds}
+            savedSolutionIds={savedSolutionIds}
+          />
         )}
 
         {currentMode === 'account' && (
@@ -445,7 +482,13 @@ export default function App() {
             onDeleteSavedFlashcard={handleDeleteSavedFlashcard}
             onDeleteSavedSolution={handleDeleteSavedSolution}
             onShowToast={showRewardToast}
-            onSwitchAccount={() => setHasEnteredTechTut(false)}
+            onSwitchAccount={handleSwitchAccount}
+          />
+        )}
+
+        {currentMode === 'quiz' && (
+          <QuizArenaView
+            userProfile={userProfile}
           />
         )}
 
@@ -457,9 +500,15 @@ export default function App() {
 
       {/* Persistent Floating Ambient Music Dock */}
       <MusicPlayerBar
-        onOpenMusicSanctuary={() => setCurrentMode('music')}
+        onOpenMusicSanctuary={() => setIsMusicPopupOpen(true)}
         recommendedTrackId={activeStudySolution?.recommendations?.ambientSoundtrack ? 'calm_focus' : undefined}
         recommendedReason={activeStudySolution?.recommendations?.recommendedMood}
+      />
+
+      {/* Global Music Track Changer Popup Modal */}
+      <MusicPopupModal
+        isOpen={isMusicPopupOpen}
+        onClose={() => setIsMusicPopupOpen(false)}
       />
 
     </div>

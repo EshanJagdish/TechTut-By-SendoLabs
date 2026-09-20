@@ -183,21 +183,24 @@ export const StudyModeView: React.FC<StudyModeViewProps> = ({
               className="px-3.5 py-1.5 rounded-full bg-white hover:bg-stone-50 border border-stone-200 text-stone-700 hover:text-stone-900 text-xs flex items-center gap-2 transition-all shadow-xs cursor-pointer"
             >
               <GraduationCap className="w-3.5 h-3.5 text-orange-600" />
-              <span>Import from Google Classroom</span>
+              <span>Google Classroom</span>
+              <span className="text-[9px] px-1 rounded bg-amber-100 text-amber-800 font-medium">Maint.</span>
             </button>
             <button
               onClick={() => onOpenWorkspace('drive')}
               className="px-3.5 py-1.5 rounded-full bg-white hover:bg-stone-50 border border-stone-200 text-stone-700 hover:text-stone-900 text-xs flex items-center gap-2 transition-all shadow-xs cursor-pointer"
             >
               <FolderSearch className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Search Drive Study Material</span>
+              <span>Drive Study Files</span>
+              <span className="text-[9px] px-1 rounded bg-amber-100 text-amber-800 font-medium">Maint.</span>
             </button>
             <button
               onClick={() => onOpenWorkspace('keep')}
               className="px-3.5 py-1.5 rounded-full bg-white hover:bg-stone-50 border border-stone-200 text-stone-700 hover:text-stone-900 text-xs flex items-center gap-2 transition-all shadow-xs cursor-pointer"
             >
               <StickyNote className="w-3.5 h-3.5 text-amber-600" />
-              <span>Hold in Scholar Notes</span>
+              <span>Scholar Notes</span>
+              <span className="text-[9px] px-1 rounded bg-amber-100 text-amber-800 font-medium">Maint.</span>
             </button>
           </div>
         )}

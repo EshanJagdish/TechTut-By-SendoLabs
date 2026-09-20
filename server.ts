@@ -980,7 +980,10 @@ Provide 4-5 high-yield questions, pairs, or steps. Return valid JSON only.`;
 app.post("/api/email/dispatch-study", (req, res) => {
   try {
     const { toEmail, subject, summary, steps, flashcards, recipientName } = req.body;
-    const recipient = toEmail || "eshanjagdish@gmail.com";
+    if (!toEmail || typeof toEmail !== 'string' || !toEmail.includes('@')) {
+      return res.status(400).json({ error: "A valid recipient email address is required." });
+    }
+    const recipient = toEmail.trim();
     const emailSubject = subject || "TechTut Study Digest & Derivations";
     const scholarName = recipientName || "Scholar";
 
@@ -1041,6 +1044,93 @@ app.post("/api/email/dispatch-study", (req, res) => {
   } catch (err: any) {
     console.error("Error in /api/email/dispatch-study:", err);
     res.status(500).json({ error: "Failed to dispatch email", details: err.message });
+  }
+});
+
+// 7. Real Quiz / Exam AI Text Extraction & Converter API
+app.post("/api/quiz/ai-convert", async (req, res) => {
+  try {
+    const { text, platformHint } = req.body;
+    if (!text || typeof text !== "string" || !text.trim()) {
+      return res.status(400).json({ error: "No input text provided for conversion." });
+    }
+
+    const cleanInput = text.trim().slice(0, 15000);
+    const ai = getAiClient();
+
+    if (!ai) {
+      return res.status(503).json({ 
+        error: "AI engine unavailable. Please use the direct CSV/TSV parser tab." 
+      });
+    }
+
+    const systemPrompt = `You are a test-parser engine for an academic quiz arena.
+Convert the user's input text (which could be copied from Quizlet terms, Blooket questions, Kahoot, or a class test document) into an array of structured multiple-choice quiz questions.
+
+RULES:
+1. Return valid JSON only, formatted as an object with a "questions" array:
+{
+  "title": "A short descriptive title for this quiz",
+  "questions": [
+    {
+      "id": "q_1",
+      "question": "Clear question text",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correctAnswerIndex": 0,
+      "explanation": "Brief explanation of why this answer is correct",
+      "timeLimitSeconds": 25,
+      "points": 1000
+    }
+  ]
+}
+2. Each question MUST have exactly 4 options.
+3. "correctAnswerIndex" MUST be an integer between 0 and 3 corresponding to the correct option.
+4. If the input is term/definition pairs (like Quizlet), format the term into a clear question (e.g., "What is the definition of: [Term]?"), set the correct definition as one of the options, and generate 3 plausible, high-quality distractors.
+5. If the input contains existing multiple choice options, preserve them.
+6. Extract up to 25 questions from the provided input text.
+7. Return raw JSON only, no markdown backticks.`;
+
+    const promptText = `Convert this ${platformHint || "quiz"} export/text into structured quiz questions:\n\n${cleanInput}`;
+
+    const responseText = await callGeminiResilient({
+      contents: promptText,
+      systemInstruction: systemPrompt,
+      responseMimeType: "application/json",
+      temperature: 0.3,
+    });
+
+    try {
+      const parsed = JSON.parse(responseText);
+      const questions = Array.isArray(parsed.questions) ? parsed.questions : (Array.isArray(parsed) ? parsed : []);
+      
+      const normalized = questions.map((q: any, idx: number) => ({
+        id: q.id || `ai_q_${Date.now()}_${idx}`,
+        question: q.question || `Question ${idx + 1}`,
+        options: Array.isArray(q.options) && q.options.length >= 4 
+          ? q.options.slice(0, 4) 
+          : [...(q.options || []), 'Option 1', 'Option 2', 'Option 3', 'Option 4'].slice(0, 4),
+        correctAnswerIndex: typeof q.correctAnswerIndex === 'number' && q.correctAnswerIndex >= 0 && q.correctAnswerIndex <= 3 
+          ? q.correctAnswerIndex 
+          : 0,
+        explanation: q.explanation || '',
+        timeLimitSeconds: q.timeLimitSeconds || 25,
+        points: q.points || 1000,
+        source: platformHint || 'custom'
+      }));
+
+      res.json({
+        success: true,
+        title: parsed.title || 'Imported Quiz Arena Exam',
+        questions: normalized,
+        count: normalized.length
+      });
+    } catch (parseErr) {
+      console.warn("Failed to parse Gemini quiz JSON:", parseErr);
+      res.status(500).json({ error: "Failed to parse structured questions from text." });
+    }
+  } catch (err: any) {
+    console.error("Error in /api/quiz/ai-convert:", err);
+    res.status(500).json({ error: err.message || "Failed to convert quiz text." });
   }
 });
 
