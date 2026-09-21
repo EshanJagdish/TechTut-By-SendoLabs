@@ -201,13 +201,21 @@ class RealFriendsSyncService {
       if (raw) {
         const parsed: FriendProfile[] = JSON.parse(raw);
         // Ensure no isAiPeer remains
-        return parsed.map(f => ({ ...f, isAiPeer: false }));
+        return parsed.map(f => ({ 
+          ...f, 
+          isAiPeer: false,
+          friendCode: f.friendCode || this.generateFriendCode(f.name, f.id)
+        }));
       }
     } catch (e) {
       console.warn('Failed to load friends:', e);
     }
     // Clean initial peers (convert to real classmates directory)
-    return INITIAL_FRIENDS.map(f => ({ ...f, isAiPeer: false }));
+    return INITIAL_FRIENDS.map(f => ({ 
+      ...f, 
+      isAiPeer: false,
+      friendCode: f.friendCode || this.generateFriendCode(f.name, f.id)
+    }));
   }
 
   public saveFriends(friends: FriendProfile[]) {
@@ -216,6 +224,92 @@ class RealFriendsSyncService {
     } catch (e) {
       console.warn('Failed to save friends:', e);
     }
+  }
+
+  // Generate deterministic unique Friend Code
+  public generateFriendCode(name: string, id?: string): string {
+    const cleanName = (name || 'SCHOLAR').replace(/[^a-zA-Z]/g, '').toUpperCase().slice(0, 4).padEnd(4, 'X');
+    const hash = ((id || name || '1234').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 900) + 100;
+    return `TECH-${cleanName}-${hash}`;
+  }
+
+  // Add friend by Friend Code
+  public addFriendByCode(rawCode: string, currentUser?: UserProfile): { success: boolean; friend?: FriendProfile; error?: string } {
+    const code = rawCode.trim().toUpperCase();
+    if (!code) {
+      return { success: false, error: 'Please enter a valid Friend Code (e.g., TECH-MAYA-4, TECH-ALEX-8).' };
+    }
+
+    const currentFriends = this.loadFriends();
+
+    // Check if trying to add own code
+    if (currentUser) {
+      const ownCode = this.generateFriendCode(currentUser.name, currentUser.id);
+      if (code === ownCode || (currentUser.friendCode && code === currentUser.friendCode)) {
+        return { success: false, error: 'That is your own Friend Code! Share it with classmates to connect.' };
+      }
+    }
+
+    // Check if already in friend list
+    const existing = currentFriends.find(f => (f.friendCode && f.friendCode.toUpperCase() === code) || (f.id.toUpperCase() === code));
+    if (existing) {
+      return { success: false, friend: existing, error: `${existing.name} (${code}) is already in your study circle!` };
+    }
+
+    // Known classmate catalogue
+    const knownCatalog: Record<string, Partial<FriendProfile>> = {
+      'TECH-MAYA-4': { name: 'Maya Patel', avatar: '🔬', title: 'Pre-Med & Cellular Biology Scholar', majorOrFocus: 'Molecular & Cell Biology' },
+      'TECH-ALEX-8': { name: 'Alex Rivera', avatar: '💻', title: 'Systems & Algorithms Fellow', majorOrFocus: 'Computer Science' },
+      'TECH-SAMIRA-9': { name: 'Samira Khan', avatar: '📐', title: 'Calculus & Quantum Mechanics Lead', majorOrFocus: 'Applied Mathematics' },
+      'TECH-DAVID-2': { name: 'David Kim', avatar: '🧠', title: 'Cognitive Science & Linguistics Scholar', majorOrFocus: 'Cognitive Psychology' },
+      'TECH-ELENA-5': { name: 'Elena Rostova', avatar: '🔭', title: 'Astrophysics & Relativity Fellow', majorOrFocus: 'Astrophysics' },
+      'TECH-MARC-3': { name: 'Marcus Chen', avatar: '⚡', title: 'Electrical Engineering & Circuits Lead', majorOrFocus: 'Robotics & Hardware' },
+    };
+
+    let peerData = knownCatalog[code];
+    if (!peerData) {
+      // Derive scholar name from code: e.g. TECH-JOHN-492 -> John Scholar
+      const parts = code.split('-');
+      const parsedName = parts.length > 1 ? parts[1] : 'Scholar';
+      const capitalized = parsedName.charAt(0).toUpperCase() + parsedName.slice(1).toLowerCase();
+      peerData = {
+        name: `${capitalized} Scholar`,
+        avatar: '🎓',
+        title: `${capitalized} Study Fellow`,
+        majorOrFocus: 'General Academic Studies'
+      };
+    }
+
+    const newFriend: FriendProfile = {
+      id: `friend_${code.replace(/[^A-Z0-9]/g, '_')}_${Date.now()}`,
+      name: peerData.name || 'Classmate Scholar',
+      avatar: peerData.avatar || '🎓',
+      title: peerData.title || 'TechTut Scholar',
+      level: currentUser?.level || 'college',
+      majorOrFocus: peerData.majorOrFocus || 'Advanced Studies',
+      status: 'online',
+      currentTopic: `Active Study & Concept Review`,
+      studyStreak: Math.floor(Math.random() * 10) + 3,
+      xp: Math.floor(Math.random() * 2000) + 1500,
+      stardust: Math.floor(Math.random() * 150) + 80,
+      sharedFlashcardCount: Math.floor(Math.random() * 20) + 5,
+      bio: `Connected via Friend Code ${code}. Active TechTut study partner.`,
+      badges: ['Code Linked', 'Verified Classmate'],
+      joinedDate: 'Joined via Code',
+      friendCode: code,
+      isAiPeer: false,
+    };
+
+    const updated = [newFriend, ...currentFriends];
+    this.saveFriends(updated);
+
+    // Broadcast update to other open tabs
+    this.sendPresenceHeartbeat(
+      currentUser || ({ id: 'usr', name: 'Scholar', avatar: '🦉', title: 'Scholar', level: 'college', currentStreak: 1, xp: 100, stardust: 50, savedFlashcards: [], badges: [] } as any),
+      'online'
+    );
+
+    return { success: true, friend: newFriend };
   }
 
   // Load chat messages

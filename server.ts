@@ -684,6 +684,198 @@ app.post("/api/music/suggest", (req, res) => {
   });
 });
 
+// Helper: Synthesize valid 16-bit PCM WAV audio buffer for offline / fallback harmonic music
+function generateProceduralWavBase64(promptText: string, durationSeconds: number = 14): string {
+  const sampleRate = 22050;
+  const numSamples = Math.floor(sampleRate * durationSeconds);
+  const numChannels = 1;
+  const bytesPerSample = 2; // 16-bit
+  const blockAlign = numChannels * bytesPerSample;
+  const byteRate = sampleRate * blockAlign;
+  const dataSize = numSamples * blockAlign;
+  const buffer = Buffer.alloc(44 + dataSize);
+
+  // RIFF header
+  buffer.write("RIFF", 0);
+  buffer.writeUInt32LE(36 + dataSize, 4);
+  buffer.write("WAVE", 8);
+
+  // fmt subchunk
+  buffer.write("fmt ", 12);
+  buffer.writeUInt32LE(16, 16); // subchunk1 size (16 for PCM)
+  buffer.writeUInt16LE(1, 20); // audio format (1 = PCM)
+  buffer.writeUInt16LE(numChannels, 22);
+  buffer.writeUInt32LE(sampleRate, 24);
+  buffer.writeUInt32LE(byteRate, 28);
+  buffer.writeUInt16LE(blockAlign, 32);
+  buffer.writeUInt16LE(16, 34); // bits per sample
+
+  // data subchunk
+  buffer.write("data", 36);
+  buffer.writeUInt32LE(dataSize, 40);
+
+  // Derive harmonic scale and root from prompt
+  let seed = 42;
+  for (let i = 0; i < promptText.length; i++) {
+    seed = (seed * 31 + promptText.charCodeAt(i)) % 10000;
+  }
+
+  // Harmonic chord progressions (Frequencies in Hz)
+  const scales = [
+    [220.0, 277.18, 329.63, 440.0, 554.37, 659.25], // A maj / F# min
+    [261.63, 329.63, 392.0, 493.88, 523.25, 659.25], // C maj
+    [196.0, 246.94, 293.66, 369.99, 440.0, 587.33], // G maj
+    [174.61, 220.0, 261.63, 329.63, 392.0, 523.25], // F maj
+  ];
+  const scale = scales[seed % scales.length];
+
+  let offset = 44;
+  const chordStepDuration = 3.2; // seconds per harmonic cycle
+
+  for (let i = 0; i < numSamples; i++) {
+    const t = i / sampleRate;
+    const cycle = Math.floor(t / chordStepDuration);
+    const cyclePos = (t % chordStepDuration) / chordStepDuration;
+
+    const rootIdx = cycle % scale.length;
+    const thirdIdx = (cycle + 2) % scale.length;
+    const fifthIdx = (cycle + 4) % scale.length;
+
+    const f1 = scale[rootIdx];
+    const f2 = scale[thirdIdx];
+    const f3 = scale[fifthIdx];
+
+    // Smooth bell/pad envelope with soft sine attack and decay
+    const envelope = Math.sin(cyclePos * Math.PI) * 0.85 + 0.15;
+    const lfo = 1.0 + 0.08 * Math.sin(2 * Math.PI * 0.25 * t);
+
+    // Warm sine fundamentals + gentle second harmonics
+    const v1 = Math.sin(2 * Math.PI * f1 * t);
+    const v2 = Math.sin(2 * Math.PI * f2 * t) * 0.7;
+    const v3 = Math.sin(2 * Math.PI * f3 * t) * 0.5;
+    const harmonicWarmth = Math.sin(4 * Math.PI * f1 * t) * 0.12;
+
+    const composite = (v1 + v2 + v3 + harmonicWarmth) * 0.24 * envelope * lfo;
+    const sampleInt = Math.max(-32768, Math.min(32767, Math.floor(composite * 32767)));
+    buffer.writeInt16LE(sampleInt, offset);
+    offset += 2;
+  }
+
+  return buffer.toString("base64");
+}
+
+// 3.5 TechTut Harmony API (Lyria 3 Music Generation & Storage)
+app.post("/api/music/generate", async (req, res) => {
+  try {
+    const { prompt, model, duration, title, imageData, mimeType } = req.body;
+    const cleanPrompt = (prompt || "Ambient serene study focus soundscape with warm soft piano chords and celestial resonance").trim();
+    const cleanTitle = (title || "Study Sanctuary Echoes").trim();
+    const selectedModel = model === "lyria-3-pro-preview" ? "lyria-3-pro-preview" : "lyria-3-clip-preview";
+
+    const ai = getAiClient();
+    if (!ai) {
+      const fallbackWav = generateProceduralWavBase64(cleanPrompt);
+      return res.json({
+        success: true,
+        isFallback: true,
+        title: cleanTitle,
+        prompt: cleanPrompt,
+        model: selectedModel,
+        audioBase64: fallbackWav,
+        mimeType: "audio/wav",
+        lyrics: `[TechTut Harmony Synthesis] Harmonic study waves calibrated for: ${cleanPrompt}`,
+        duration: selectedModel === "lyria-3-pro-preview" ? "60s" : "30s",
+        note: "Lyria 3 neural music preview is active with a paid GEMINI_API_KEY."
+      });
+    }
+
+    try {
+      let contents: any = cleanPrompt;
+      if (imageData && mimeType) {
+        const cleanBase64 = imageData.replace(/^data:image\/\w+;base64,/, "");
+        contents = {
+          parts: [
+            { text: cleanPrompt },
+            { inlineData: { data: cleanBase64, mimeType } }
+          ]
+        };
+      }
+
+      const stream = await ai.models.generateContentStream({
+        model: selectedModel,
+        contents,
+      });
+
+      let audioBase64 = "";
+      let lyrics = "";
+      let audioMimeType = "audio/wav";
+
+      for await (const chunk of stream) {
+        const parts = chunk.candidates?.[0]?.content?.parts;
+        if (!parts) continue;
+
+        for (const part of parts) {
+          if (part.inlineData?.data) {
+            if (!audioBase64 && part.inlineData.mimeType) {
+              audioMimeType = part.inlineData.mimeType;
+            }
+            audioBase64 += part.inlineData.data;
+          }
+          if (part.text && !lyrics) {
+            lyrics = part.text;
+          }
+        }
+      }
+
+      if (!audioBase64) {
+        console.warn("Lyria stream finished without audio chunks, using harmonic procedural synthesis.");
+        const fallbackWav = generateProceduralWavBase64(cleanPrompt);
+        return res.json({
+          success: true,
+          isFallback: true,
+          title: cleanTitle,
+          prompt: cleanPrompt,
+          model: selectedModel,
+          audioBase64: fallbackWav,
+          mimeType: "audio/wav",
+          lyrics: lyrics || `[TechTut Harmony] Ambient resonance generated for: ${cleanPrompt}`,
+          duration: selectedModel === "lyria-3-pro-preview" ? "60s" : "30s"
+        });
+      }
+
+      return res.json({
+        success: true,
+        isFallback: false,
+        title: cleanTitle,
+        prompt: cleanPrompt,
+        model: selectedModel,
+        audioBase64,
+        mimeType: audioMimeType,
+        lyrics,
+        duration: selectedModel === "lyria-3-pro-preview" ? "Full Track" : "30s"
+      });
+    } catch (modelErr: any) {
+      console.warn("Lyria model generation notice:", modelErr?.message || modelErr);
+      const fallbackWav = generateProceduralWavBase64(cleanPrompt);
+      return res.json({
+        success: true,
+        isFallback: true,
+        title: cleanTitle,
+        prompt: cleanPrompt,
+        model: selectedModel,
+        audioBase64: fallbackWav,
+        mimeType: "audio/wav",
+        lyrics: `[TechTut Harmony Synthesis] Ambient study wave crafted for: ${cleanPrompt}`,
+        duration: selectedModel === "lyria-3-pro-preview" ? "60s" : "30s",
+        errorNotice: modelErr?.message
+      });
+    }
+  } catch (err: any) {
+    console.error("Error in /api/music/generate:", err);
+    res.status(500).json({ error: "Failed to generate music track." });
+  }
+});
+
 // 4. Developer Blueprint API (returns architectural blueprints)
 app.get("/api/dev/blueprint", (req, res) => {
   res.json({
@@ -862,21 +1054,34 @@ function generateFallbackGame(
 // 5. AI Multimodal Game Generation API (Text + Image support with gemini-3.8-flash)
 app.post("/api/games/generate", async (req, res) => {
   try {
-    const { studyText, imageData, mimeType, gameArchetype, level } = req.body;
-    const selectedArchetype = gameArchetype || (imageData ? "diagram_detective" : "blitz");
-    const targetLevel = level || "college";
-    const cleanText = (studyText || "").trim();
+    const { 
+      studyText, 
+      text, 
+      imageData, 
+      mimeType, 
+      gameArchetype, 
+      archetype, 
+      level, 
+      educationLevel, 
+      topic 
+    } = req.body;
+    const cleanText = (text || studyText || "").trim();
+    const cleanTopic = (topic || "Academic Curriculum").trim();
+    const selectedArchetype = archetype || gameArchetype || (imageData ? "diagram_detective" : "blitz");
+    const targetLevel = educationLevel || level || "college";
 
     const ai = getAiClient();
     if (!ai) {
       const fallback = generateFallbackGame(cleanText, selectedArchetype, targetLevel, Boolean(imageData));
-      res.json(fallback);
+      fallback.topic = cleanTopic;
+      res.json({ success: true, game: fallback, ...fallback });
       return;
     }
 
     const systemPrompt = `You are the TechTut Game Architect AI, developed by SendoLabs.
 Your mission is to generate highly engaging, academically rigorous, playable educational games based directly on study texts, lecture notes, textbook passages, formulas, OR uploaded diagrams/photos.
 Target Level: ${targetLevel}.
+Topic: ${cleanTopic}.
 Desired Game Archetype: "${selectedArchetype}" (one of: 'blitz', 'matching', 'sequence', 'diagram_detective').
 
 RULES:
@@ -887,7 +1092,7 @@ RULES:
   "id": "string",
   "title": "Short punchy game title",
   "archetype": "${selectedArchetype}",
-  "topic": "Concise topic name",
+  "topic": "${cleanTopic}",
   "sourceType": "${imageData ? 'image' : 'text'}",
   "description": "2-sentence encouraging game description",
   "rules": "Brief instructions on how to play and score",
@@ -927,7 +1132,7 @@ RULES:
       "id": "dc_1",
       "clue": "Visual inspection clue regarding the provided image",
       "targetLabel": "Feature name",
-      "options": ["A", "B", "C", "D"],
+      "options": ["Option A", "Option B", "Option C", "Option D"],
       "correctIndex": 0,
       "explanation": "Explanation linking image feature to theory"
     }
@@ -937,6 +1142,7 @@ RULES:
 }`;
 
     const promptText = `Generate a complete, playable ${selectedArchetype} game for this study material:
+Topic: "${cleanTopic}"
 Text: "${cleanText || "Academic Concept Mastery"}"
 ${imageData ? "Note: The user has attached an image/diagram. Carefully analyze the diagram, symbols, graphs, or text in the image to formulate the game challenges." : ""}
 Provide 4-5 high-yield questions, pairs, or steps. Return valid JSON only.`;
@@ -962,17 +1168,110 @@ Provide 4-5 high-yield questions, pairs, or steps. Return valid JSON only.`;
     try {
       const parsed = JSON.parse(responseText);
       parsed.id = parsed.id || "game_" + Date.now();
+      parsed.title = parsed.title || `${cleanTopic} Arena`;
       parsed.archetype = parsed.archetype || selectedArchetype;
+      parsed.topic = parsed.topic || cleanTopic;
+      parsed.targetLevel = parsed.targetLevel || targetLevel;
       parsed.xpReward = parsed.xpReward || 100;
       parsed.stardustReward = parsed.stardustReward || 40;
-      res.json(parsed);
+      res.json({ success: true, game: parsed, ...parsed });
     } catch (parseErr) {
       console.warn("Failed to parse AI game JSON, using fallback:", parseErr);
-      res.json(generateFallbackGame(cleanText, selectedArchetype, targetLevel, Boolean(imageData)));
+      const fallback = generateFallbackGame(cleanText, selectedArchetype, targetLevel, Boolean(imageData));
+      fallback.topic = cleanTopic;
+      res.json({ success: true, game: fallback, ...fallback });
     }
   } catch (err: any) {
     console.error("Error in /api/games/generate:", err);
-    res.json(generateFallbackGame(req.body.studyText || "", req.body.gameArchetype || "blitz", req.body.level, Boolean(req.body.imageData)));
+    const fallback = generateFallbackGame(
+      req.body.text || req.body.studyText || "", 
+      req.body.archetype || req.body.gameArchetype || "blitz", 
+      req.body.educationLevel || req.body.level || "college", 
+      Boolean(req.body.imageData)
+    );
+    res.json({ success: true, game: fallback, ...fallback });
+  }
+});
+
+// 5.5 TechTut Live Interactive Voice Tutor API (Spoken Oral Explanations)
+app.post("/api/live/explain", async (req, res) => {
+  try {
+    const { query, topic, level, persona, contextData, previousExchange } = req.body;
+    const targetLevel = level || "college";
+    const selectedPersona = persona || "astra"; // 'vance' | 'astra' | 'coach'
+    const studentQuery = (query || topic || "Explain this core concept").trim();
+
+    const personaDescriptions: Record<string, string> = {
+      vance: "Professor Vance: Deeply intellectual, rigorous, methodical, step-by-step mathematical and conceptual precision.",
+      astra: "Astra / Luna: Calming, lucid, warm, empathetic study mentor who uses intuitive analogies and clear rhythm.",
+      coach: "Coach Leo: High-energy, sharp, exam-blitz strategist highlighting speed tricks, pitfall avoidance, and high-yield scoring."
+    };
+
+    const systemPrompt = `You are TechTut Live, an interactive voice tutor built by SendoLabs for TechTut V2.5.
+Persona: ${personaDescriptions[selectedPersona] || personaDescriptions.astra}
+Target Education Level: ${targetLevel}.
+
+MISSION:
+Explain the requested topic or question directly to the student as spoken oral speech.
+CRITICAL FOR AUDIO/VOICE READABILITY:
+- Write in a natural, conversational oral speaking cadence.
+- Do NOT output markdown tables, asterisks, bullet points, raw LaTeX formulas, or code blocks in the spokenText.
+- Spell out mathematical notation phonetically for speech (e.g. say "f prime of x equals 2 x times sine of x" rather than "f'(x) = 2x*sin(x)").
+- Keep the explanation engaging, intuitive, and concise (about 3-4 spoken paragraphs, approximately 45-75 seconds of speech).
+- Include an intuitive real-world analogy.
+- End with a friendly, check-for-understanding verbal prompt.
+
+Return valid JSON with this schema:
+{
+  "spokenText": "The complete, natural voice script to be read aloud by the tutor with zero markdown or special characters",
+  "visualSummary": "A concise 2-3 sentence visual summary for the student's chalkboard display",
+  "keyFormula": "The primary formula or core takeaway if applicable, formatted nicely for reading",
+  "keyTakeaways": ["Key bullet 1", "Key bullet 2", "Key bullet 3"],
+  "followUpPrompt": "A single spoken question asking if the student understands or wants to try an example"
+}`;
+
+    const promptText = `Student asked or requested explanation for: "${studentQuery}"
+${topic ? `Subject / Topic: ${topic}` : ''}
+${contextData ? `Additional Study Context: ${typeof contextData === 'string' ? contextData : JSON.stringify(contextData).slice(0, 600)}` : ''}
+${previousExchange ? `Previous conversation context: ${previousExchange}` : ''}`;
+
+    const ai = getAiClient();
+    if (!ai) {
+      return res.json({
+        spokenText: `Welcome to TechTut Live. Let us examine ${studentQuery}. At the ${targetLevel} level, the key intuition rests on understanding how the foundational variables interact. Remember to break complex problems into their fundamental components, check your boundary conditions, and test with simple values first. Would you like me to walk through a specific step-by-step example with you now?`,
+        visualSummary: `TechTut Live verbal breakdown for ${studentQuery}. Focused on foundational principles and boundary conditions.`,
+        keyFormula: "Foundation = First Principles + Boundary Analysis",
+        keyTakeaways: [
+          "Establish known boundary conditions before calculating",
+          "Isolate primary governing variables",
+          "Test limits with simple numerical examples"
+        ],
+        followUpPrompt: "Would you like me to walk you through a specific numerical derivation or real-world example?"
+      });
+    }
+
+    const responseText = await callGeminiResilient({
+      contents: [promptText],
+      systemInstruction: systemPrompt,
+      responseMimeType: "application/json",
+      temperature: 0.7,
+    });
+
+    try {
+      const parsed = JSON.parse(responseText);
+      res.json(parsed);
+    } catch (parseErr) {
+      res.json({
+        spokenText: `Here is the explanation for ${studentQuery}. The essential principle is to trace cause and effect step by step. When you analyze this concept, always verify your boundary conditions and keep units consistent throughout. Does this feel clear, or would you like another example?`,
+        visualSummary: `Core conceptual intuition for ${studentQuery}.`,
+        keyFormula: "Intuition First, Computation Second",
+        keyTakeaways: ["Break problem into sequential steps", "Confirm physical meaning of every term"],
+        followUpPrompt: "Shall we try a quick practice question together?"
+      });
+    }
+  } catch (err: any) {
+    console.error("Error in /api/live/explain:", err);
+    res.status(500).json({ error: "Failed to generate live vocal explanation." });
   }
 });
 

@@ -7,10 +7,12 @@ export type EducationLevel =
 
 export type AppMode = 
   | 'study' 
+  | 'live'
   | 'addon' 
   | 'games' 
   | 'music' 
   | 'quiz'
+  | 'social'
   | 'account' 
   | 'workspace'
   | 'dev_blueprint';
@@ -239,6 +241,7 @@ export interface UserProfile {
   savedAddOns?: AddOnInsight[];
   unlockedBadges?: string[];
   dailyChallenges?: DailyChallenge[];
+  friendCode?: string;
   history?: any[];
 }
 
@@ -270,6 +273,7 @@ export interface FriendProfile {
   bio?: string;
   badges: string[];
   joinedDate: string;
+  friendCode?: string;
   isAiPeer?: boolean;
 }
 
@@ -356,5 +360,19 @@ export interface QuizSession {
   questions: QuizQuestion[];
   participants: Record<string, QuizParticipant>;
   violationsLog: CheatingViolation[];
+}
+
+export interface GeneratedMusicTrack {
+  id: string;
+  title: string;
+  prompt: string;
+  model: 'lyria-3-clip-preview' | 'lyria-3-pro-preview' | 'techtut-engine';
+  audioBase64: string;
+  mimeType: string;
+  duration: string;
+  createdAt: number;
+  lyrics?: string;
+  tags?: string[];
+  isFavorite?: boolean;
 }
 

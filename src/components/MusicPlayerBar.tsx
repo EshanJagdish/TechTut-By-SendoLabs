@@ -93,6 +93,8 @@ export const MusicPlayerBar: React.FC<MusicPlayerBarProps> = ({
   const [volume, setVolume] = useState(dreamyAudio.volume);
   const [layers, setLayers] = useState<AudioLayerState>(dreamyAudio.layers);
   const [currentTrackId, setCurrentTrackId] = useState(dreamyAudio.currentTrackId);
+  const [isCustomAudio, setIsCustomAudio] = useState(dreamyAudio.isCustomAudio);
+  const [activeCustomTrack, setActiveCustomTrack] = useState(dreamyAudio.activeCustomTrack);
   const [isVenueOpen, setIsVenueOpen] = useState(() => {
     try {
       const saved = localStorage.getItem('techtut_music_venue_open');
@@ -120,6 +122,8 @@ export const MusicPlayerBar: React.FC<MusicPlayerBarProps> = ({
       setVolume(state.volume);
       setLayers(state.layers);
       setCurrentTrackId(state.currentTrackId);
+      setIsCustomAudio(Boolean(state.isCustomAudio));
+      setActiveCustomTrack(state.activeCustomTrack);
     });
     return unsub;
   }, []);
@@ -247,10 +251,10 @@ export const MusicPlayerBar: React.FC<MusicPlayerBarProps> = ({
                 </div>
                 <div className="hidden sm:block min-w-0 text-left">
                   <div className="text-xs font-semibold text-white truncate max-w-[140px]">
-                    {currentTrack.title}
+                    {isCustomAudio && activeCustomTrack ? activeCustomTrack.title : currentTrack.title}
                   </div>
                   <div className="text-[10px] text-white/50 truncate">
-                    {isPlaying ? 'Playing • Ambient' : 'Paused'}
+                    {isPlaying ? (isCustomAudio ? 'Lyria 3 Audio' : 'Playing • Ambient') : 'Paused'}
                   </div>
                 </div>
               </div>
@@ -323,7 +327,7 @@ export const MusicPlayerBar: React.FC<MusicPlayerBarProps> = ({
                 <button 
                   onClick={onOpenMusicSanctuary}
                   className="shrink-0 w-11 h-11 rounded-2xl bg-orange-500/20 border border-orange-400/30 flex items-center justify-center text-orange-300 group shadow-md hover:bg-orange-500/30 transition-all cursor-pointer"
-                  title="Open Full Sound Sanctuary"
+                  title="Open TechTut Harmony Sound Sanctuary"
                 >
                   <Music className="w-4 h-4 text-orange-300 group-hover:scale-110 transition-transform" />
                 </button>
@@ -331,14 +335,14 @@ export const MusicPlayerBar: React.FC<MusicPlayerBarProps> = ({
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <h4 className="text-sm font-semibold text-white truncate">
-                      {currentTrack.title}
+                      {isCustomAudio && activeCustomTrack ? activeCustomTrack.title : currentTrack.title}
                     </h4>
                     <span className="text-[9px] px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-300 font-semibold border border-orange-500/30 uppercase tracking-wider font-mono">
-                      {currentTrack.category.replace('_', ' ')}
+                      {isCustomAudio ? 'TechTut Harmony' : currentTrack.category.replace('_', ' ')}
                     </span>
                   </div>
                   <p className="text-xs text-white/50 truncate max-w-sm">
-                    {currentTrack.subtitle}
+                    {isCustomAudio && activeCustomTrack ? (activeCustomTrack.prompt || 'Synthesized study audio') : currentTrack.subtitle}
                   </p>
                 </div>
 

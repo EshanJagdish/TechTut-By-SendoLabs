@@ -11,7 +11,14 @@ import { AccountSystemView } from './components/AccountSystemView';
 import { DevBlueprintView } from './components/DevBlueprintView';
 import { WorkspaceHubView } from './components/WorkspaceHubView';
 import { QuizArenaView } from './components/QuizArenaView';
+import { TechTutLiveView } from './components/TechTutLiveView';
+import { FriendsView } from './components/FriendsView';
 import { RegistrationPortal } from './components/RegistrationPortal';
+import { 
+  getActiveScholarSession, 
+  setActiveScholarSession, 
+  clearActiveScholarSession 
+} from './lib/scholarAuth';
 import { 
   auth,
   initAuth, 
@@ -147,35 +154,56 @@ export default function App() {
   const [toastMessage, setToastMessage] = useState<{ title: string; subtitle: string; icon?: string } | null>(null);
   const [isMusicPopupOpen, setIsMusicPopupOpen] = useState<boolean>(false);
 
-  // Sync with Firebase Firestore on boot & login
+  // Sync with Firebase Firestore on boot & login + Local Scholar session protection
   useEffect(() => {
+    // 1. Check if user already has an active Scholar session
+    const existingScholar = getActiveScholarSession();
+    if (existingScholar) {
+      setHasEnteredTechTut(true);
+      localStorage.setItem('techtut_entered', 'true');
+      setUserProfile(prev => ({
+        ...prev,
+        ...existingScholar
+      }));
+    }
+
     const unsubscribe = initAuth(
       (firebaseUser) => {
         setHasEnteredTechTut(true);
         localStorage.setItem('techtut_entered', 'true');
         loadUserProfileFromFirestore(firebaseUser.uid).then(cloudProfile => {
           if (cloudProfile) {
-            setUserProfile(prev => ({
-              ...prev,
-              id: firebaseUser.uid,
-              name: cloudProfile.name || firebaseUser.displayName || prev.name,
-              email: firebaseUser.email || cloudProfile.email || prev.email,
-              emailVerified: firebaseUser.emailVerified ?? cloudProfile.emailVerified ?? prev.emailVerified,
-              emailPreferences: cloudProfile.emailPreferences || prev.emailPreferences,
-              avatar: cloudProfile.avatar || prev.avatar,
-              xp: cloudProfile.xp !== undefined ? cloudProfile.xp : prev.xp,
-              stardust: cloudProfile.stardust !== undefined ? cloudProfile.stardust : prev.stardust,
-              level: cloudProfile.level || prev.level,
-              theme: cloudProfile.theme || prev.theme,
-              currentStreak: cloudProfile.currentStreak || prev.currentStreak,
-            }));
+            setUserProfile(prev => {
+              const updated = {
+                ...prev,
+                id: firebaseUser.uid,
+                name: cloudProfile.name || firebaseUser.displayName || prev.name,
+                email: firebaseUser.email || cloudProfile.email || prev.email,
+                emailVerified: firebaseUser.emailVerified ?? cloudProfile.emailVerified ?? prev.emailVerified,
+                emailPreferences: cloudProfile.emailPreferences || prev.emailPreferences,
+                avatar: cloudProfile.avatar || prev.avatar,
+                xp: cloudProfile.xp !== undefined ? cloudProfile.xp : prev.xp,
+                stardust: cloudProfile.stardust !== undefined ? cloudProfile.stardust : prev.stardust,
+                level: cloudProfile.level || prev.level,
+                theme: cloudProfile.theme || prev.theme,
+                currentStreak: cloudProfile.currentStreak || prev.currentStreak,
+              };
+              setActiveScholarSession(updated);
+              return updated;
+            });
           } else {
             syncUserProfileToFirestore(firebaseUser, userProfile).catch(console.warn);
           }
         }).catch(console.warn);
       },
       () => {
-        // No authenticated session: require sign-in / registration (no guest bypass)
+        // If an active local scholar session exists, keep the scholar in their sanctuary
+        const localActive = getActiveScholarSession();
+        if (localActive) {
+          setHasEnteredTechTut(true);
+          localStorage.setItem('techtut_entered', 'true');
+          return;
+        }
         setHasEnteredTechTut(false);
         localStorage.removeItem('techtut_entered');
         setUserProfile(INITIAL_PROFILE);
@@ -197,6 +225,7 @@ export default function App() {
     } catch (err) {
       console.warn("Sign out error:", err);
     }
+    clearActiveScholarSession();
     localStorage.removeItem('techtut_entered');
     setUserProfile(INITIAL_PROFILE);
     setHasEnteredTechTut(false);
@@ -346,10 +375,14 @@ export default function App() {
         defaultLevel={userProfile.level}
         onEnterApp={(updates) => {
           if (updates) {
-            setUserProfile(prev => ({
-              ...prev,
-              ...updates
-            }));
+            setUserProfile(prev => {
+              const updated = {
+                ...prev,
+                ...updates
+              };
+              setActiveScholarSession(updated);
+              return updated;
+            });
           }
           setHasEnteredTechTut(true);
           localStorage.setItem('techtut_entered', 'true');
@@ -463,6 +496,19 @@ export default function App() {
           />
         )}
 
+        {currentMode === 'live' && (
+          <TechTutLiveView
+            educationLevel={userProfile.level}
+            activeStudySolution={activeStudySolution}
+            onAwardReward={handleAwardReward}
+            onOpenStudyMode={(query, subject) => {
+              if (query) setWorkspaceStudyQuery(query);
+              if (subject) setWorkspaceStudySubject(subject);
+              setCurrentMode('study');
+            }}
+          />
+        )}
+
         {currentMode === 'account' && (
           <AccountSystemView
             userProfile={userProfile}
@@ -483,6 +529,7 @@ export default function App() {
             onDeleteSavedSolution={handleDeleteSavedSolution}
             onShowToast={showRewardToast}
             onSwitchAccount={handleSwitchAccount}
+            onOpenSocial={() => setCurrentMode('account')}
           />
         )}
 
@@ -509,6 +556,7 @@ export default function App() {
       <MusicPopupModal
         isOpen={isMusicPopupOpen}
         onClose={() => setIsMusicPopupOpen(false)}
+        onShowToast={showRewardToast}
       />
 
     </div>

@@ -25,10 +25,7 @@ import {
   Play,
   ArrowRight,
   RefreshCw,
-  Eye,
-  Wrench,
-  AlertTriangle,
-  Lock
+  Eye
 } from 'lucide-react';
 import { Badge, DailyChallenge, EducationLevel, GeneratedAiGame, GameArchetype } from '../types';
 
@@ -152,8 +149,9 @@ export const GameSystemView: React.FC<GameSystemViewProps> = ({
       });
 
       const data = await res.json();
-      if (data.game) {
-        initGame(data.game);
+      const generatedGame = data.game || (data.title ? data : null);
+      if (generatedGame) {
+        initGame(generatedGame);
         onAwardReward(40, 20, 'game_creator');
         setActiveTab('play');
       } else {
@@ -299,65 +297,15 @@ export const GameSystemView: React.FC<GameSystemViewProps> = ({
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-6 sm:py-8 space-y-6">
       
-      {/* BIG MAINTENANCE BANNER MAKING GAMES TAB INACCESSIBLE */}
-      <div 
-        id="games-maintenance-banner"
-        className="w-full p-6 sm:p-8 rounded-3xl bg-amber-50 border-2 border-amber-400 shadow-md flex flex-col md:flex-row items-center gap-6 animate-in fade-in"
-      >
-        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-lg shrink-0">
-          <Wrench className="w-8 h-8 sm:w-10 sm:h-10 animate-pulse" />
-        </div>
-        <div className="flex-1 text-center md:text-left space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-200/80 border border-amber-300 text-amber-900 text-xs font-bold uppercase tracking-wider">
-            <AlertTriangle className="w-3.5 h-3.5 text-amber-700" />
-            <span>Games Arena Offline</span>
-          </div>
-          <h1 className="text-3xl sm:text-5xl font-black text-amber-950 tracking-tight">
-            Maintenance
-          </h1>
-          <p className="text-sm sm:text-base text-amber-900/90 font-medium max-w-3xl leading-relaxed">
-            The Games tab is currently under scheduled maintenance and system optimization. Game creation, rapid speed blitz duels, concept matching, and interactive games are temporarily inaccessible.
-          </p>
-          <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 pt-1 text-xs text-amber-800 font-semibold">
-            <span className="flex items-center gap-1.5">
-              <Lock className="w-3.5 h-3.5 text-amber-700" />
-              Inaccessible During Maintenance Window
-            </span>
-            <span>•</span>
-            <span>Please continue your learning in Study Mode or Quiz Arena</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Inaccessible Games Sandbox (Locked Out with Pointer Events Disabled) */}
-      <div className="relative">
-        {/* Semi-transparent lock barrier overlay */}
-        <div className="absolute inset-0 z-30 flex flex-col items-center justify-center p-6 bg-stone-100/50 backdrop-blur-[2px] rounded-3xl border-2 border-dashed border-amber-300 pointer-events-auto">
-          <div className="p-6 rounded-2xl bg-white/95 border border-amber-300 shadow-xl text-center max-w-md space-y-2">
-            <div className="w-12 h-12 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center mx-auto">
-              <Lock className="w-6 h-6" />
-            </div>
-            <h3 className="text-base font-bold text-stone-900">
-              Games Temporarily Inaccessible
-            </h3>
-            <p className="text-xs text-stone-600">
-              Maintenance is actively underway. Interactive games and creation controls have been disabled.
-            </p>
-          </div>
-        </div>
-
-        {/* Disabled background games UI */}
-        <div className="opacity-25 pointer-events-none select-none filter blur-[1px] space-y-6">
-      
       {/* Top Header Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-stone-200/90 shadow-xs">
         <div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-50 border border-orange-200 text-orange-700 text-xs font-semibold uppercase tracking-wider mb-2">
             <Gamepad2 className="w-3.5 h-3.5 text-orange-500" />
-            <span>AI Study Game Arena</span>
+            <span>TechTut Gamie • AI Study Game Arena</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900">
-            Learn Through Interactive Play
+            Learn Through Interactive Play with TechTut Gamie
           </h2>
           <p className="text-sm text-stone-600 mt-1 max-w-2xl font-normal">
             Generate custom flash games directly from lecture text, homework problems, and textbook diagram images.
@@ -439,9 +387,9 @@ export const GameSystemView: React.FC<GameSystemViewProps> = ({
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-bold text-stone-900 flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-orange-500" />
-                  <span>AI Game Constructor</span>
+                  <span>TechTut Gamie Constructor</span>
                 </h3>
-                <span className="text-xs text-stone-500">Gemini 3.8 Flash Engine</span>
+                <span className="text-xs text-stone-500 font-medium">TechTut Gamie Engine</span>
               </div>
 
               {/* Topic Title */}
@@ -601,12 +549,12 @@ export const GameSystemView: React.FC<GameSystemViewProps> = ({
                 {isGenerating ? (
                   <>
                     <RefreshCw className="w-4 h-4 animate-spin" />
-                    <span>Gemini AI is crafting your game mechanics...</span>
+                    <span>TechTut Gamie is crafting your game mechanics...</span>
                   </>
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4" />
-                    <span>Generate AI Game From Study Material</span>
+                    <span>Generate Game with TechTut Gamie</span>
                   </>
                 )}
               </button>
@@ -654,10 +602,10 @@ export const GameSystemView: React.FC<GameSystemViewProps> = ({
             <div className="bg-orange-50/50 rounded-2xl border border-orange-200/80 p-5 space-y-2.5">
               <h4 className="text-xs font-bold text-orange-950 uppercase tracking-wider flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5 text-orange-600" />
-                <span>Pedagogical Engine</span>
+                <span>TechTut Gamie Pedagogical Engine</span>
               </h4>
               <p className="text-xs text-orange-900/80 leading-relaxed">
-                TechTut translates any unstructured study note or handwritten diagram into active recall games. Correct moves award XP and Stardust to reinforce long-term memory.
+                TechTut Gamie translates any unstructured study note or handwritten diagram into active recall games. Correct moves award XP and Stardust to reinforce long-term memory.
               </p>
             </div>
 
@@ -1077,9 +1025,6 @@ export const GameSystemView: React.FC<GameSystemViewProps> = ({
           </div>
         </div>
       )}
-
-        </div>
-      </div>
 
     </div>
   );

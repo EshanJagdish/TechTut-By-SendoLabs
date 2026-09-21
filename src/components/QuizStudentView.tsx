@@ -60,6 +60,7 @@ export const QuizStudentView: React.FC<QuizStudentViewProps> = ({
 
   // Helper to enter full screen
   const requestFullScreen = async () => {
+    if (isLockedOut) return;
     try {
       if (document.documentElement.requestFullscreen) {
         await document.documentElement.requestFullscreen();
@@ -95,10 +96,22 @@ export const QuizStudentView: React.FC<QuizStudentViewProps> = ({
   const reportViolation = useCallback((type: 'exit_fullscreen' | 'switch_tab' | 'window_blur', details: string) => {
     if (!hasStartedExam || isExamSubmitted) return;
     setLocalViolationsCount(prev => prev + 1);
-    setShowExitWarningModal(true);
     // Play urgent siren for 2 seconds on candidate screen
     playViolationAlarmSound(2.0);
     logCheatingViolation(currentSession.code, studentId, studentName, type, details);
+
+    // Sync state immediately from storage so lockout reflects instantaneously
+    const all = getAllStoredSessions();
+    const updated = all[currentSession.code];
+    if (updated) {
+      setCurrentSession(updated);
+      const participant = updated.participants[studentId];
+      if (participant?.isLockedOut) {
+        setShowExitWarningModal(false);
+      } else {
+        setShowExitWarningModal(true);
+      }
+    }
   }, [hasStartedExam, isExamSubmitted, currentSession.code, studentId, studentName]);
 
   // Anti-Cheat Event Listeners (Fullscreen, Visibility, Blur)
@@ -498,7 +511,9 @@ export const QuizStudentView: React.FC<QuizStudentViewProps> = ({
                 Teacher Forgiveness Required
               </h2>
               <p className="text-xs sm:text-sm text-red-200 leading-relaxed max-w-md mx-auto">
-                You exited full screen mode during this test. The teacher requires full screen. You cannot play or answer questions until your teacher presses <strong>&ldquo;Forgive&rdquo;</strong> on the host monitor.
+                {participantData?.lockoutReason?.includes('tab') || participantData?.lockoutReason?.includes('Tab')
+                  ? 'The teacher activated "No Switch Tabs" for this exam. You switched browser tabs or minimized the window. Your exam is completely locked and you cannot return to the exam until your teacher forgives you on the host screen.'
+                  : 'You exited full screen mode or left the exam window. The teacher has locked this exam. You cannot return or answer questions until your teacher presses "Forgive" on the host monitor.'}
               </p>
             </div>
 

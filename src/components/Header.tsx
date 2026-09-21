@@ -11,7 +11,9 @@ import {
   GraduationCap, 
   Palette,
   ChevronDown,
-  HelpCircle
+  HelpCircle,
+  Mic,
+  Users
 } from 'lucide-react';
 import { AppMode, DreamyTheme, EducationLevel } from '../types';
 
@@ -93,6 +95,9 @@ export const Header: React.FC<HeaderProps> = ({
                   TechTut
                   <span className="w-1.5 h-1.5 rounded-full bg-orange-500" />
                 </span>
+                <span className="px-2 py-0.5 bg-orange-100 rounded-full text-[10px] text-orange-800 border border-orange-200 font-extrabold tracking-wide">
+                  V2.5
+                </span>
                 <span className="hidden sm:inline-block px-2 py-0.5 bg-orange-50 rounded-full text-[10px] text-orange-700 border border-orange-200 font-semibold">
                   SendoLabs
                 </span>
@@ -113,22 +118,25 @@ export const Header: React.FC<HeaderProps> = ({
                   ? 'bg-orange-500 text-white shadow-xs'
                   : 'text-stone-600 hover:text-stone-900 hover:bg-white/80'
               }`}
+              title="TechTut Scholar Engine - Standard"
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Study</span>
+              <span>Scholar</span>
             </button>
 
             <button
-              id="nav-addon-mode"
-              onClick={() => onSelectMode('addon')}
+              id="nav-live-mode"
+              onClick={() => onSelectMode('live')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                currentMode === 'addon'
+                currentMode === 'live'
                   ? 'bg-orange-500 text-white shadow-xs'
                   : 'text-stone-600 hover:text-stone-900 hover:bg-white/80'
               }`}
+              title="TechTut Stage - TechTut Live Voice Engine"
             >
-              <Orbit className="w-3.5 h-3.5" />
-              <span>Add-On</span>
+              <Mic className="w-3.5 h-3.5 text-orange-600 group-hover:text-stone-900" />
+              <span>TechTut Stage</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
             </button>
 
             <button
@@ -139,9 +147,10 @@ export const Header: React.FC<HeaderProps> = ({
                   ? 'bg-orange-500 text-white shadow-xs'
                   : 'text-stone-600 hover:text-stone-900 hover:bg-white/80'
               }`}
+              title="TechTut Gamie - Games"
             >
               <Gamepad2 className="w-3.5 h-3.5" />
-              <span>Games</span>
+              <span>TechTut Gamie</span>
             </button>
 
             <button
@@ -271,70 +280,56 @@ export const Header: React.FC<HeaderProps> = ({
               id="header-music-btn"
               onClick={onOpenMusicPopup}
               className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-orange-50 hover:bg-orange-100 border border-orange-200 text-orange-800 text-xs font-semibold transition-all cursor-pointer shadow-xs active:scale-95"
-              title="Open Music Sanctuary & Change Tracks"
+              title="TechTut Harmony - for Music (Sound Sanctuary & Track Switcher)"
             >
               <Headphones className="w-3.5 h-3.5 text-orange-600 animate-pulse" />
-              <span className="hidden sm:inline">Music</span>
+              <span className="hidden sm:inline">Harmony</span>
             </button>
 
           </div>
         </div>
 
         {/* Mobile bottom navigation bar */}
-        <div className="flex md:hidden items-center justify-around py-2 mt-2 rounded-2xl bg-white border border-stone-200 shadow-xs text-xs">
+        <div className="flex md:hidden items-center justify-around py-2 mt-2 rounded-2xl bg-white border border-stone-200 shadow-xs text-xs overflow-x-auto">
           <button
             onClick={() => onSelectMode('study')}
-            className={`flex flex-col items-center py-1 ${currentMode === 'study' ? 'text-orange-600 font-semibold' : 'text-stone-500'}`}
+            className={`flex flex-col items-center py-1 px-2 ${currentMode === 'study' ? 'text-orange-600 font-semibold' : 'text-stone-500'}`}
           >
             <Sparkles className="w-4 h-4" />
-            <span className="text-[10px] mt-0.5">Study</span>
+            <span className="text-[10px] mt-0.5">Scholar</span>
           </button>
           <button
-            onClick={() => onSelectMode('addon')}
-            className={`flex flex-col items-center py-1 ${currentMode === 'addon' ? 'text-orange-600 font-semibold' : 'text-stone-500'}`}
+            onClick={() => onSelectMode('live')}
+            className={`flex flex-col items-center py-1 px-2 relative ${currentMode === 'live' ? 'text-orange-600 font-semibold' : 'text-stone-500'}`}
           >
-            <Orbit className="w-4 h-4" />
-            <span className="text-[10px] mt-0.5">Add-On</span>
+            <Mic className="w-4 h-4" />
+            <span className="text-[10px] mt-0.5">Stage</span>
+            <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-emerald-500" />
           </button>
           <button
             onClick={() => onSelectMode('games')}
-            className={`flex flex-col items-center py-1 ${currentMode === 'games' ? 'text-orange-600 font-semibold' : 'text-stone-500'}`}
+            className={`flex flex-col items-center py-1 px-2 ${currentMode === 'games' ? 'text-orange-600 font-semibold' : 'text-stone-500'}`}
           >
             <Gamepad2 className="w-4 h-4" />
-            <span className="text-[10px] mt-0.5">Games</span>
-          </button>
-          <button
-            onClick={onOpenMusicPopup}
-            className="flex flex-col items-center py-1 text-stone-500 hover:text-orange-600"
-            title="Music Tracks & Sound Sanctuary"
-          >
-            <Headphones className="w-4 h-4" />
-            <span className="text-[10px] mt-0.5">Music</span>
+            <span className="text-[10px] mt-0.5">Gamie</span>
           </button>
           <button
             onClick={() => onSelectMode('quiz')}
-            className={`flex flex-col items-center py-1 ${currentMode === 'quiz' ? 'text-orange-600 font-semibold' : 'text-stone-500'}`}
+            className={`flex flex-col items-center py-1 px-2 ${currentMode === 'quiz' ? 'text-orange-600 font-semibold' : 'text-stone-500'}`}
           >
             <HelpCircle className="w-4 h-4" />
             <span className="text-[10px] mt-0.5">Quiz</span>
           </button>
           <button
             onClick={() => onSelectMode('account')}
-            className={`flex flex-col items-center py-1 ${currentMode === 'account' ? 'text-orange-600 font-semibold' : 'text-stone-500'}`}
+            className={`flex flex-col items-center py-1 px-2 ${currentMode === 'account' ? 'text-orange-600 font-semibold' : 'text-stone-500'}`}
           >
             <User className="w-4 h-4" />
             <span className="text-[10px] mt-0.5">Account</span>
           </button>
           <button
-            onClick={() => onSelectMode('workspace')}
-            className={`flex flex-col items-center py-1 ${currentMode === 'workspace' ? 'text-orange-600 font-semibold' : 'text-stone-500'}`}
-          >
-            <GraduationCap className="w-4 h-4" />
-            <span className="text-[10px] mt-0.5">Workspace</span>
-          </button>
-          <button
             onClick={() => onSelectMode('dev_blueprint')}
-            className={`flex flex-col items-center py-1 ${currentMode === 'dev_blueprint' ? 'text-orange-600 font-semibold' : 'text-stone-500'}`}
+            className={`flex flex-col items-center py-1 px-2 ${currentMode === 'dev_blueprint' ? 'text-orange-600 font-semibold' : 'text-stone-500'}`}
           >
             <Code2 className="w-4 h-4" />
             <span className="text-[10px] mt-0.5">Specs</span>

@@ -120,20 +120,20 @@ export const MusicSystemView: React.FC = () => {
       <div className="text-center space-y-3">
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-xs font-semibold uppercase tracking-widest">
           <Headphones className="w-3.5 h-3.5 text-indigo-400" />
-          <span>TechTut Sound Sanctuary • Continuous Procedural Ambient Music</span>
+          <span>TechTut Harmony • Continuous Procedural Ambient Music Sanctuary</span>
         </div>
         <h1 className="text-2xl sm:text-4xl font-light italic font-serif tracking-tight text-white">
-          Study Music & Acoustic Sanctuary
+          TechTut Harmony Acoustic Sanctuary
         </h1>
         <p className="text-sm sm:text-base text-[#E0D8F0]/70 max-w-2xl mx-auto leading-relaxed">
-          Lush procedural ambient pads, soft lo-fi jazz chords, and harmonic layers that shield against cognitive fatigue.
+          Lush procedural ambient pads, soft lo-fi jazz chords, and harmonic layers powered by TechTut Harmony to shield against cognitive fatigue.
         </p>
       </div>
 
       {/* Hero Visualizer & Master Deck */}
       <div className="p-6 sm:p-8 rounded-[32px] sm:rounded-[40px] bg-white/5 border border-white/10 backdrop-blur-xl shadow-2xl space-y-6 relative overflow-hidden">
         <div className="absolute top-0 right-0 p-6">
-          <span className="px-3 py-1 bg-indigo-500/20 rounded-full text-[10px] text-indigo-300 border border-indigo-500/30 font-semibold uppercase tracking-wider">MUSIC MODE</span>
+          <span className="px-3 py-1 bg-indigo-500/20 rounded-full text-[10px] text-indigo-300 border border-indigo-500/30 font-semibold uppercase tracking-wider">TECHTUT HARMONY</span>
         </div>
 
         {/* Waveform Screen */}
@@ -141,7 +141,7 @@ export const MusicSystemView: React.FC = () => {
           <canvas ref={canvasRef} width={480} height={140} className="w-full h-full" />
           <div className="absolute top-3 left-4 text-xs font-mono text-indigo-300 flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-indigo-400 animate-ping" />
-            <span>Harmonic Web Audio Engine • Real-time synthesis</span>
+            <span>TechTut Harmony Audio Engine • Real-time synthesis</span>
           </div>
         </div>
 

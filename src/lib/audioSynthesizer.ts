@@ -33,13 +33,23 @@ class DreamyAudioEngine {
   public isPlaying: boolean = false;
   public volume: number = 0.6;
   public currentTrackId: string = 'dreamy_starlight';
+  public isCustomAudio: boolean = false;
+  public activeCustomTrack: { id: string; title: string; prompt?: string } | null = null;
+  private customAudioSource: AudioBufferSourceNode | null = null;
   public layers: AudioLayerState = {
     rain: false,
     chimes: true,
     binaural: false,
   };
 
-  private listeners: ((state: { isPlaying: boolean; volume: number; layers: AudioLayerState; currentTrackId: string }) => void)[] = [];
+  private listeners: ((state: { 
+    isPlaying: boolean; 
+    volume: number; 
+    layers: AudioLayerState; 
+    currentTrackId: string;
+    isCustomAudio: boolean;
+    activeCustomTrack: { id: string; title: string; prompt?: string } | null;
+  }) => void)[] = [];
 
   private ensureContext() {
     if (!this.ctx) {
@@ -75,6 +85,8 @@ class DreamyAudioEngine {
       volume: this.volume,
       layers: { ...this.layers },
       currentTrackId: this.currentTrackId,
+      isCustomAudio: this.isCustomAudio,
+      activeCustomTrack: this.activeCustomTrack ? { ...this.activeCustomTrack } : null,
     }));
   }
 
@@ -351,7 +363,13 @@ class DreamyAudioEngine {
   public play() {
     this.ensureContext();
     this.isPlaying = true;
-    this.startPad();
+    if (this.isCustomAudio && this.customAudioSource) {
+      // If paused on a custom audio track and play is clicked
+      // We start pad if no custom source exists
+    } else {
+      this.isCustomAudio = false;
+      this.startPad();
+    }
 
     if (this.layers.chimes) this.scheduleChime();
     if (this.layers.rain) this.startRain();
@@ -366,6 +384,7 @@ class DreamyAudioEngine {
     this.stopChimes();
     this.stopRain();
     this.stopBinaural();
+    this.stopCustomAudioInternal();
     this.notify();
   }
 
@@ -386,11 +405,92 @@ class DreamyAudioEngine {
   }
 
   public setTrack(trackId: string) {
+    this.stopCustomAudioInternal();
+    this.isCustomAudio = false;
+    this.activeCustomTrack = null;
     this.currentTrackId = trackId;
     if (this.isPlaying) {
       this.startPad();
     }
     this.notify();
+  }
+
+  private stopCustomAudioInternal() {
+    if (this.customAudioSource) {
+      try {
+        this.customAudioSource.onended = null;
+        this.customAudioSource.stop();
+        this.customAudioSource.disconnect();
+      } catch (e) {
+        // Ignored
+      }
+      this.customAudioSource = null;
+    }
+  }
+
+  public stopCustomAudio() {
+    this.stopCustomAudioInternal();
+    this.isCustomAudio = false;
+    this.isPlaying = false;
+    this.activeCustomTrack = null;
+    this.notify();
+  }
+
+  public async playCustomAudio(audioBase64: string, trackInfo: { id: string; title: string; prompt?: string }): Promise<boolean> {
+    try {
+      this.ensureContext();
+      if (!this.ctx) return false;
+
+      // Stop any synth pad
+      this.stopPad();
+      this.stopCustomAudioInternal();
+
+      // Convert base64 to ArrayBuffer
+      const cleanBase64 = audioBase64.replace(/^data:audio\/\w+;base64,/, '');
+      const binaryString = atob(cleanBase64);
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      const audioBuffer = await this.ctx.decodeAudioData(bytes.buffer.slice(0));
+
+      const source = this.ctx.createBufferSource();
+      source.buffer = audioBuffer;
+      source.loop = true; // Continuous peaceful study loop
+
+      if (this.masterGain) {
+        source.connect(this.masterGain);
+      } else {
+        source.connect(this.ctx.destination);
+      }
+
+      this.customAudioSource = source;
+      this.isCustomAudio = true;
+      this.activeCustomTrack = trackInfo;
+      this.isPlaying = true;
+
+      source.onended = () => {
+        if (!source.loop) {
+          this.isPlaying = false;
+          this.notify();
+        }
+      };
+
+      source.start(0);
+
+      // Also maintain subtle layers if enabled
+      if (this.layers.chimes) this.scheduleChime();
+      if (this.layers.rain) this.startRain();
+      if (this.layers.binaural) this.startBinaural();
+
+      this.notify();
+      return true;
+    } catch (err) {
+      console.error('Failed to play custom audio in DreamyAudioEngine:', err);
+      return false;
+    }
   }
 
   public toggleLayer(layer: keyof AudioLayerState) {

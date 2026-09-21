@@ -166,7 +166,7 @@ export const StudyModeView: React.FC<StudyModeViewProps> = ({
       <div className="text-center space-y-3">
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-orange-50 border border-orange-200 text-orange-700 text-xs font-semibold uppercase tracking-wider">
           <Sparkles className="w-3.5 h-3.5 text-orange-500" />
-          <span>TechTut Study Sanctuary • Academically Rigorous, Focused & Clean</span>
+          <span>TechTut Scholar Engine (Standard) • Academically Rigorous, Focused & Clean</span>
         </div>
         <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-stone-900">
           What concept shall we illuminate today?
@@ -326,7 +326,7 @@ export const StudyModeView: React.FC<StudyModeViewProps> = ({
             <Sparkles className="w-6 h-6 text-orange-500 animate-spin" />
           </div>
           <div className="space-y-1">
-            <h3 className="text-base font-bold text-stone-900">Consulting the TechTut Scholar Engine</h3>
+            <h3 className="text-base font-bold text-stone-900">Consulting TechTut Scholar Engine (Standard)</h3>
             <p className="text-xs text-stone-500">Deconstructing problem milestones, weaving memory mnemonics, and calibrating study pacing...</p>
           </div>
         </div>

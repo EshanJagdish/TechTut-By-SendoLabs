@@ -15,7 +15,8 @@ export const SENDOLABS_DEV_BLUEPRINTS: SystemSpecSection[] = [
     summary: 'Core guidelines for TechTut by SendoLabs: ethereal calmness paired with academic rigor.',
     details: [
       'Brand Name: Exclusively styled as "TechTut by SendoLabs".',
-      'Backend Intelligence Abstraction: Copilot and backend LLMs are NEVER exposed or mentioned to learners. All intelligence is framed as the "TechTut Celestial Engine" or "SendoLabs Thought Matrix".',
+      'Official Four-Engine Architecture: (1) TechTut Scholar Engine - Standard (academic curriculum, step-by-step solutions, and active recall), (2) TechTut Harmony - for Music (binaural sound sanctuary & Lyria 3 generative synthesis), (3) TechTut Gamie - Games (AI game constructor and memory battles), (4) TechTut Stage - TechTut Live (conversational real-time voice tutoring).',
+      'Backend Intelligence Abstraction: Copilot and raw backend LLMs are NEVER exposed or mentioned to learners. All intelligence is framed under the 4 official TechTut engines.',
       'Tone Principle: Gentle, reassuring, mathematically and scientifically precise, poetic yet crystal clear.',
       'Stress Reduction: Eliminates anxiety-inducing red error marks, harsh buzzer sounds, and urgent timers. Replaces them with gentle chimes, starlight progress, and compassionate reframing.',
       'Universal Accessibility: Supports Kindergarten/Primary (School), High School (AP/IB/GCSE), College, University (Advanced STEM/Humanities), and Adult Lifelong Learners.'

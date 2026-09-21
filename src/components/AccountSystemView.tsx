@@ -26,7 +26,12 @@ import {
   Settings,
   Calendar,
   Zap,
-  HelpCircle
+  HelpCircle,
+  Users,
+  UserPlus,
+  Copy,
+  Share2,
+  MessageCircle
 } from 'lucide-react';
 import { 
   DreamyTheme, 
@@ -34,8 +39,12 @@ import {
   EmailPreferences, 
   FlashcardItem, 
   StudySolution, 
-  UserProfile 
+  UserProfile,
+  FriendProfile
 } from '../types';
+import { realFriendsSync } from '../utils/realFriendsSync';
+import { FocusCalendarWidget } from './FocusCalendarWidget';
+import { authenticateOrRegisterScholar } from '../lib/scholarAuth';
 import { 
   auth, 
   signUpWithEmail, 
@@ -56,6 +65,7 @@ interface AccountSystemViewProps {
   onDeleteSavedSolution: (solutionId: string) => void;
   onShowToast?: (title: string, subtitle: string, icon?: string) => void;
   onSwitchAccount?: () => void;
+  onOpenSocial?: () => void;
 }
 
 const AVATARS = [
@@ -74,10 +84,59 @@ export const AccountSystemView: React.FC<AccountSystemViewProps> = ({
   onDeleteSavedSolution,
   onShowToast,
   onSwitchAccount,
+  onOpenSocial,
 }) => {
-  const [activeTab, setActiveTab] = useState<'profile' | 'email' | 'flashcards' | 'answers'>('email');
+  const [activeTab, setActiveTab] = useState<'profile' | 'email' | 'friends' | 'flashcards' | 'answers'>('email');
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState(userProfile.name);
+  
+  // Friend Codes state
+  const [friendsList, setFriendsList] = useState<FriendProfile[]>(() => realFriendsSync.loadFriends());
+  const [friendCodeInput, setFriendCodeInput] = useState('');
+  const [friendCodeStatus, setFriendCodeStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [copiedCode, setCopiedCode] = useState(false);
+
+  const ownFriendCode = userProfile.friendCode || realFriendsSync.generateFriendCode(userProfile.name, userProfile.id);
+
+  // Sync friends on mount & live presence
+  useEffect(() => {
+    setFriendsList(realFriendsSync.loadFriends());
+    return realFriendsSync.onPresence(() => {
+      setFriendsList(realFriendsSync.loadFriends());
+    });
+  }, []);
+
+  const handleCopyFriendCode = () => {
+    try {
+      if (navigator?.clipboard?.writeText) {
+        navigator.clipboard.writeText(ownFriendCode);
+      }
+      setCopiedCode(true);
+      setTimeout(() => setCopiedCode(false), 2500);
+      if (onShowToast) {
+        onShowToast('Friend Code Copied', `${ownFriendCode} copied to clipboard!`, '📋');
+      }
+    } catch (e) {
+      setCopiedCode(true);
+      setTimeout(() => setCopiedCode(false), 2500);
+    }
+  };
+
+  const handleAddFriendByCode = (codeToUse?: string) => {
+    const targetCode = (codeToUse || friendCodeInput).trim().toUpperCase();
+    if (!targetCode) return;
+    const res = realFriendsSync.addFriendByCode(targetCode, userProfile);
+    if (res.success && res.friend) {
+      setFriendsList(realFriendsSync.loadFriends());
+      setFriendCodeStatus({ type: 'success', message: `Successfully connected with ${res.friend.name}! (${targetCode})` });
+      setFriendCodeInput('');
+      if (onShowToast) {
+        onShowToast('Classmate Linked!', `${res.friend.name} joined your study circle.`, '🎉');
+      }
+    } else {
+      setFriendCodeStatus({ type: 'error', message: res.error || 'Invalid or already connected friend code.' });
+    }
+  };
   
   // Flashcard review state
   const [reviewCardIndex, setReviewCardIndex] = useState(0);
@@ -173,6 +232,16 @@ export const AccountSystemView: React.FC<AccountSystemViewProps> = ({
       notify("Account Connected", `Signed in as ${user.email}`, "🔐");
       setAuthPassword('');
     } catch (err: any) {
+      if (err?.code === 'auth/operation-not-allowed' || err?.message?.includes('operation-not-allowed')) {
+        const scholarRes = authenticateOrRegisterScholar(authEmail, authPassword, authName);
+        if (scholarRes.success && scholarRes.profile) {
+          onUpdateProfile(scholarRes.profile);
+          setAuthSuccessMsg("Scholar profile verified locally!");
+          notify("Account Connected", `Signed in as ${authEmail}`, "🔐");
+          setAuthPassword('');
+          return;
+        }
+      }
       console.error("Sign in failed:", err);
       let message = "Unable to sign in. Please check your credentials.";
       if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
@@ -215,6 +284,16 @@ export const AccountSystemView: React.FC<AccountSystemViewProps> = ({
       notify("Welcome Scholar", `Created account for ${user.email}`, "🌟");
       setAuthPassword('');
     } catch (err: any) {
+      if (err?.code === 'auth/operation-not-allowed' || err?.message?.includes('operation-not-allowed')) {
+        const scholarRes = authenticateOrRegisterScholar(authEmail, authPassword, authName);
+        if (scholarRes.success && scholarRes.profile) {
+          onUpdateProfile(scholarRes.profile);
+          setAuthSuccessMsg("Scholar account created locally! Welcome to TechTut.");
+          notify("Welcome Scholar", `Created account for ${authEmail}`, "🌟");
+          setAuthPassword('');
+          return;
+        }
+      }
       console.error("Sign up failed:", err);
       let message = "Failed to create account. Please try again.";
       if (err.code === 'auth/email-already-in-use') {
@@ -245,6 +324,15 @@ export const AccountSystemView: React.FC<AccountSystemViewProps> = ({
         notify("Google Connected", `Linked ${res.user.email}`, "🌐");
       }
     } catch (err: any) {
+      if (err?.code === 'auth/operation-not-allowed' || err?.message?.includes('operation-not-allowed')) {
+        const scholarRes = authenticateOrRegisterScholar('google.scholar@techtut.edu', 'googlescholar', 'Google Scholar');
+        if (scholarRes.success && scholarRes.profile) {
+          onUpdateProfile(scholarRes.profile);
+          setAuthSuccessMsg("Signed in via Scholar profile!");
+          notify("Scholar Connected", "Linked Google Scholar profile", "🌐");
+          return;
+        }
+      }
       setAuthError("Google Sign-In was cancelled or failed to complete.");
     } finally {
       setAuthLoading(false);
@@ -480,37 +568,14 @@ export const AccountSystemView: React.FC<AccountSystemViewProps> = ({
           </div>
         </div>
 
-        {/* 7-Day Lunar Streak Matrix */}
-        <div className="pt-4 border-t border-stone-100 space-y-3">
-          <span className="text-xs font-semibold text-stone-700 flex items-center gap-1.5 uppercase tracking-wider font-mono">
-            <Flame className="w-3.5 h-3.5 text-orange-500" />
-            7-Day Study Streak Matrix
-          </span>
-
-          <div className="grid grid-cols-7 gap-2">
-            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, idx) => {
-              const isPast = idx < userProfile.currentStreak;
-              const isToday = idx === userProfile.currentStreak - 1;
-
-              return (
-                <div 
-                  key={day}
-                  className={`p-2.5 rounded-xl border text-center transition-all ${
-                    isPast
-                      ? 'bg-orange-50 border-orange-200 text-orange-800 font-medium'
-                      : 'bg-stone-50 border-stone-200 text-stone-400'
-                  }`}
-                >
-                  <span className="text-[10px] uppercase block font-semibold font-mono">{day}</span>
-                  <span className="text-base block my-0.5">{isPast ? '🔥' : '⚪'}</span>
-                  <span className="text-[9px] block text-stone-500">{isToday ? 'Today' : isPast ? 'Active' : 'Rest'}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
       </div>
+
+      {/* Interactive Focus Calendar Widget */}
+      <FocusCalendarWidget
+        userProfile={userProfile}
+        onUpdateProfile={onUpdateProfile}
+        onShowToast={onShowToast}
+      />
 
       {/* Navigation Sub-Tabs */}
       <div className="flex items-center justify-center">
@@ -533,6 +598,19 @@ export const AccountSystemView: React.FC<AccountSystemViewProps> = ({
             }`}
           >
             Avatar & Spirit
+          </button>
+
+          <button
+            onClick={() => setActiveTab('friends')}
+            className={`px-4 py-2 rounded-full transition-all flex items-center gap-1.5 cursor-pointer ${
+              activeTab === 'friends' ? 'bg-orange-500 text-white shadow-xs font-semibold' : 'text-stone-600 hover:text-stone-900'
+            }`}
+          >
+            <Users className="w-3.5 h-3.5" />
+            <span>Friend Codes</span>
+            <span className="px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-700 text-[10px] font-bold">
+              {friendsList.length}
+            </span>
           </button>
 
           <button
@@ -1132,6 +1210,263 @@ export const AccountSystemView: React.FC<AccountSystemViewProps> = ({
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 5. FRIEND CODES & REAL STUDY CIRCLE */}
+      {/* ========================================================================= */}
+      {activeTab === 'friends' && (
+        <div className="space-y-6">
+          
+          {/* Header Banner */}
+          <div className="p-6 rounded-3xl bg-white border border-stone-200/90 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-bold text-stone-900">Friend Codes & Classmate Network</h3>
+                <span className="px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 text-[10px] font-bold uppercase tracking-wider">
+                  V2.5 Live Peer Sync
+                </span>
+              </div>
+              <p className="text-xs text-stone-500 mt-1">
+                Connect directly with your real study partners using unique scholar codes. Connected friends appear across your Social Tab, Live Study Rooms, and Chat.
+              </p>
+            </div>
+
+            {onOpenSocial && (
+              <button
+                onClick={onOpenSocial}
+                className="px-4 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold shadow-xs flex items-center gap-2 self-start md:self-auto cursor-pointer transition-all"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span>Open Social & Study Rooms</span>
+              </button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            {/* Left Col: Your Personal Friend Code (5 cols) */}
+            <div className="lg:col-span-5 space-y-6">
+              
+              <div className="p-6 rounded-3xl bg-white border border-stone-200/90 shadow-xs space-y-5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">{userProfile.avatar}</span>
+                    <div>
+                      <h4 className="text-sm font-bold text-stone-900">Your Scholar Friend Code</h4>
+                      <p className="text-[11px] text-stone-500 font-medium">Share this code with other students</p>
+                    </div>
+                  </div>
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" title="Live & Discoverable" />
+                </div>
+
+                {/* Big Code Pill */}
+                <div className="p-4 rounded-2xl bg-orange-50/70 border border-orange-200 text-center space-y-2">
+                  <span className="text-[10px] uppercase tracking-widest font-mono text-orange-700 font-bold block">
+                    Permanent Scholar Code
+                  </span>
+                  <div className="font-mono text-xl sm:text-2xl font-extrabold text-stone-900 tracking-wider">
+                    {ownFriendCode}
+                  </div>
+                  <p className="text-[11px] text-stone-500">
+                    Linked to {userProfile.name} • {userProfile.level.replace('_', ' ')}
+                  </p>
+                </div>
+
+                {/* Copy Button */}
+                <button
+                  onClick={handleCopyFriendCode}
+                  className={`w-full py-3 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs ${
+                    copiedCode
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-stone-900 hover:bg-stone-800 text-white'
+                  }`}
+                >
+                  {copiedCode ? (
+                    <>
+                      <Check className="w-4 h-4" />
+                      <span>Copied to Clipboard!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4" />
+                      <span>Copy My Friend Code</span>
+                    </>
+                  )}
+                </button>
+
+                <div className="text-[11px] text-stone-500 leading-relaxed bg-stone-50 p-3 rounded-xl border border-stone-200/60">
+                  💡 <span className="font-semibold text-stone-700">How it works:</span> When a classmate enters your code in their Account Tab, you both get added to each other's Social Tab for peer messaging, shared flashcards, and synchronized Pomodoro study sessions.
+                </div>
+              </div>
+
+              {/* Quick Classmate Presets to test */}
+              <div className="p-5 rounded-3xl bg-white border border-stone-200/90 shadow-xs space-y-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-stone-700 font-mono">
+                  Official Classmate Network Directory
+                </h4>
+                <p className="text-[11px] text-stone-500">
+                  Tap any classmate code below to immediately connect your study desk:
+                </p>
+                <div className="space-y-2 pt-1">
+                  {[
+                    { name: 'Maya Patel', code: 'TECH-MAYA-4', icon: '🔬', major: 'Cellular Biology' },
+                    { name: 'Alex Rivera', code: 'TECH-ALEX-8', icon: '💻', major: 'Algorithms & CS' },
+                    { name: 'Samira Khan', code: 'TECH-SAMIRA-9', icon: '📐', major: 'Quantum & Applied Math' },
+                    { name: 'David Kim', code: 'TECH-DAVID-2', icon: '🧠', major: 'Cognitive Science' },
+                    { name: 'Elena Rostova', code: 'TECH-ELENA-5', icon: '🔭', major: 'Astrophysics' },
+                  ].map((peer) => {
+                    const isAlreadyFriend = friendsList.some(f => f.friendCode?.toUpperCase() === peer.code);
+                    return (
+                      <div
+                        key={peer.code}
+                        className="p-2.5 rounded-xl bg-stone-50 hover:bg-orange-50/50 border border-stone-200/80 flex items-center justify-between gap-2 transition-colors text-xs"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span>{peer.icon}</span>
+                          <div>
+                            <span className="font-semibold text-stone-900 block">{peer.name}</span>
+                            <span className="text-[10px] text-stone-400 font-mono">{peer.code} • {peer.major}</span>
+                          </div>
+                        </div>
+
+                        {isAlreadyFriend ? (
+                          <span className="px-2 py-1 rounded-lg bg-emerald-50 text-emerald-700 text-[10px] font-bold">
+                            Connected
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => handleAddFriendByCode(peer.code)}
+                            className="px-2.5 py-1 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-[11px] font-bold cursor-pointer transition-colors"
+                          >
+                            + Connect
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+            </div>
+
+            {/* Right Col: Add by Code Form & Connected Circle (7 cols) */}
+            <div className="lg:col-span-7 space-y-6">
+              
+              {/* Connect by Code Card */}
+              <div className="p-6 rounded-3xl bg-white border border-stone-200/90 shadow-xs space-y-4">
+                <div className="flex items-center gap-2">
+                  <UserPlus className="w-5 h-5 text-orange-600" />
+                  <h4 className="text-sm font-bold text-stone-900">Enter Classmate's Friend Code</h4>
+                </div>
+
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleAddFriendByCode();
+                  }}
+                  className="space-y-3"
+                >
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={friendCodeInput}
+                      onChange={(e) => setFriendCodeInput(e.target.value)}
+                      placeholder="e.g. TECH-MAYA-4 or TECH-XXXX-123"
+                      className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-4 py-2.5 text-xs text-stone-900 uppercase font-mono tracking-wider focus:outline-none focus:border-orange-500"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!friendCodeInput.trim()}
+                      className="px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white text-xs font-bold shadow-xs cursor-pointer transition-all shrink-0"
+                    >
+                      Connect Friend
+                    </button>
+                  </div>
+
+                  {friendCodeStatus && (
+                    <div className={`p-3 rounded-xl text-xs flex items-center gap-2 ${
+                      friendCodeStatus.type === 'success'
+                        ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                        : 'bg-rose-50 text-rose-800 border border-rose-200'
+                    }`}>
+                      {friendCodeStatus.type === 'success' ? <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" /> : <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />}
+                      <span>{friendCodeStatus.message}</span>
+                    </div>
+                  )}
+                </form>
+              </div>
+
+              {/* Connected Friends List */}
+              <div className="p-6 rounded-3xl bg-white border border-stone-200/90 shadow-xs space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-stone-100">
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4 text-orange-600" />
+                    <h4 className="text-sm font-bold text-stone-900">Your Connected Study Circle</h4>
+                  </div>
+                  <span className="text-xs text-stone-400 font-mono font-medium">
+                    {friendsList.length} Connected Scholars
+                  </span>
+                </div>
+
+                <div className="space-y-3">
+                  {friendsList.map((friend) => (
+                    <div
+                      key={friend.id}
+                      className="p-4 rounded-2xl bg-stone-50 hover:bg-white border border-stone-200/80 hover:border-orange-200 hover:shadow-xs transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl p-2 rounded-xl bg-white border border-stone-200/70 shadow-xs">
+                          {friend.avatar}
+                        </span>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-stone-900 text-sm">{friend.name}</span>
+                            <span className={`w-2 h-2 rounded-full ${
+                              friend.status === 'studying' ? 'bg-orange-500 animate-pulse' :
+                              friend.status === 'focus_sprint' ? 'bg-amber-500' :
+                              friend.status === 'online' ? 'bg-emerald-500' : 'bg-stone-300'
+                            }`} />
+                          </div>
+                          <p className="text-stone-500 text-[11px] font-medium">{friend.title}</p>
+                          <div className="flex items-center gap-2 mt-1 font-mono text-[10px] text-stone-400">
+                            <span className="text-orange-700 bg-orange-50 px-1.5 py-0.5 rounded font-bold">
+                              {friend.friendCode || 'CODE LINKED'}
+                            </span>
+                            <span>🔥 {friend.studyStreak}d streak</span>
+                            <span>⚡ {friend.xp} XP</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                        {onOpenSocial && (
+                          <button
+                            onClick={onOpenSocial}
+                            className="px-3 py-1.5 rounded-lg bg-white hover:bg-orange-50 border border-stone-200 hover:border-orange-300 text-stone-700 hover:text-orange-900 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors"
+                          >
+                            <MessageCircle className="w-3.5 h-3.5" />
+                            <span>Message</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+
+                  {friendsList.length === 0 && (
+                    <div className="text-center py-8 text-stone-400 space-y-2">
+                      <Users className="w-8 h-8 mx-auto text-stone-300" />
+                      <p className="text-xs">No classmates added yet. Enter a Friend Code above to start connecting!</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
         </div>
       )}
 
