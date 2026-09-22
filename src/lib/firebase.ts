@@ -220,23 +220,46 @@ export const changeUserEmail = async (newEmail: string): Promise<void> => {
 };
 
 // 5. Cloud Firestore Account Sync
-export const syncUserProfileToFirestore = async (user: User, profile: UserProfile): Promise<void> => {
-  const path = `users/${user.uid}`;
+export const syncUserProfileToFirestore = async (
+  userOrProfile: User | UserProfile, 
+  maybeProfile?: UserProfile
+): Promise<void> => {
+  let user: User | null = null;
+  let profile: UserProfile;
+
+  if (maybeProfile) {
+    user = userOrProfile as User;
+    profile = maybeProfile;
+  } else {
+    profile = userOrProfile as UserProfile;
+    user = auth.currentUser;
+  }
+
+  const targetUid = user?.uid || profile.id || 'scholar_current';
+  const path = `users/${targetUid}`;
+
   try {
-    const userDocRef = doc(db, 'users', user.uid);
+    const userDocRef = doc(db, 'users', targetUid);
     await setDoc(userDocRef, {
-      id: user.uid,
-      name: profile.name || user.displayName || 'Luna Scholar',
-      email: user.email || profile.email || '',
-      emailVerified: user.emailVerified || !!profile.emailVerified,
+      id: targetUid,
+      name: profile.name || user?.displayName || 'Scholar',
+      email: user?.email || profile.email || '',
+      emailVerified: user?.emailVerified || !!profile.emailVerified,
       emailPreferences: profile.emailPreferences || {
         dailyStudyReminder: true,
         weeklyProgressDigest: true,
         streakFreezeAlert: true,
         reminderTime: '08:00'
       },
+      cosmicSettings: profile.cosmicSettings || {
+        starPattern: 'constellation',
+        ambientGlowColor: 'warm_amber',
+        starsEnabled: true,
+        glowIntensity: 'subtle',
+        particleSpeed: 'gentle'
+      },
       avatar: profile.avatar || '🦉',
-      title: profile.title || 'Luna Scholar of SendoLabs',
+      title: profile.title || 'Scholar of TechTut',
       level: profile.level || 'college',
       theme: profile.theme || 'aurora_violet',
       xp: profile.xp || 0,

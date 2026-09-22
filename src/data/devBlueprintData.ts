@@ -130,14 +130,14 @@ CORE DIRECTIVES:
     summary: 'Algorithmic and procedural soundscape pairing matching cognitive load to auditory frequency.',
     details: [
       'Audio Philosophy: Continuous procedural audio using HTML5 Web Audio API so the app never relies on broken external audio links or copyright strikes.',
-      'Tracks: Dreamy Starlight (432Hz ambient chord swells), Calm Focus (soft lo-fi Rhodes progression), Midnight River (binaural delta waves + flowing stream), Celestial Lo-Fi (gentle warm vinyl beats with pentatonic chimes), and Deep Nebula (warm ambient drone).',
+      'Tracks: TechTut Main Theme (432Hz ambient chord swells), Calm Focus (soft lo-fi Rhodes progression), Midnight River (binaural delta waves + flowing stream), Celestial Lo-Fi (gentle warm vinyl beats with pentatonic chimes), and Deep Nebula (warm ambient drone).',
       'Layer Mixers: Independent toggles for Gentle Rainfall, Star Chimes (procedural pentatonic generator), and 40Hz Gamma Focus hum.'
     ],
     codeBlock: `SOUNDSCAPE RECOMMENDATION MATRIX:
 - Heavy Mathematics & Formal Logic (Calculus, Physics, Discrete Math):
   Recommended: "Calm Focus" (Rhodes + 40Hz Gamma Tone) to synchronize bilateral hemisphere focus.
 - Memorization & Biology/Anatomy:
-  Recommended: "Dreamy Starlight" (432Hz Ambient Swell + Pentatonic Star Chimes) for relaxed encoding.
+  Recommended: "TechTut Main Theme" (432Hz Ambient Swell + Pentatonic Star Chimes) for relaxed encoding.
 - Reading Comprehension & Philosophy/Literature:
   Recommended: "Midnight River" (Soft stream + Gentle vinyl warmth) to minimize vocal interference.
 - Creative Problem Solving & Architecture:

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { BackgroundStars } from './components/BackgroundStars';
-import { MusicPlayerBar } from './components/MusicPlayerBar';
 import { StudyModeView } from './components/StudyModeView';
 import { AddOnModeView } from './components/AddOnModeView';
 import { GameSystemView, ALL_BADGES } from './components/GameSystemView';
@@ -37,7 +36,7 @@ import {
   AddOnInsight, 
   DailyChallenge 
 } from './types';
-import { Sparkles, Award } from 'lucide-react';
+import { Sparkles, Award, Headphones } from 'lucide-react';
 
 const INITIAL_PROFILE: UserProfile = {
   id: 'scholar_init',
@@ -49,6 +48,13 @@ const INITIAL_PROFILE: UserProfile = {
     weeklyProgressDigest: true,
     streakFreezeAlert: true,
     reminderTime: '08:00'
+  },
+  cosmicSettings: {
+    starPattern: 'constellation',
+    ambientGlowColor: 'warm_amber',
+    starsEnabled: true,
+    glowIntensity: 'subtle',
+    particleSpeed: 'gentle'
   },
   avatar: '🦉',
   title: 'Scholar of TechTut',
@@ -402,7 +408,7 @@ export default function App() {
       </div>
 
       {/* Background Interactive Starfield */}
-      <BackgroundStars />
+      <BackgroundStars cosmicSettings={userProfile.cosmicSettings} />
 
       {/* Primary Navigation & Status Bar */}
       <Header
@@ -422,13 +428,13 @@ export default function App() {
       {/* Floating Dynamic Reward Toast */}
       {toastMessage && (
         <div className="fixed top-20 right-4 z-50 animate-in slide-in-from-top-4 duration-300 pointer-events-none">
-          <div className="px-4 py-3 rounded-2xl bg-white border border-stone-200/90 shadow-lg flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-orange-50 border border-orange-200 flex items-center justify-center text-base text-orange-600">
+          <div className="px-3.5 py-2.5 rounded-full bg-white/95 border border-stone-200/80 shadow-md backdrop-blur-md flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-full bg-orange-50 border border-orange-200 flex items-center justify-center text-sm text-orange-600">
               {toastMessage.icon || "✨"}
             </div>
             <div>
-              <h5 className="text-xs font-bold text-stone-900">{toastMessage.title}</h5>
-              <p className="text-[11px] text-orange-700">{toastMessage.subtitle}</p>
+              <h5 className="text-xs font-semibold text-stone-900">{toastMessage.title}</h5>
+              <p className="text-[11px] text-stone-600">{toastMessage.subtitle}</p>
             </div>
           </div>
         </div>
@@ -545,19 +551,44 @@ export default function App() {
 
       </main>
 
-      {/* Persistent Floating Ambient Music Dock */}
-      <MusicPlayerBar
-        onOpenMusicSanctuary={() => setIsMusicPopupOpen(true)}
-        recommendedTrackId={activeStudySolution?.recommendations?.ambientSoundtrack ? 'calm_focus' : undefined}
-        recommendedReason={activeStudySolution?.recommendations?.recommendedMood}
-      />
-
       {/* Global Music Track Changer Popup Modal */}
       <MusicPopupModal
         isOpen={isMusicPopupOpen}
         onClose={() => setIsMusicPopupOpen(false)}
         onShowToast={showRewardToast}
       />
+
+      {/* Right Middle Music Pop ("music pop in the right middle", mobile optimized) */}
+      <div 
+        id="right-middle-music-pop" 
+        className="fixed right-2 sm:right-5 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center"
+      >
+        <button
+          onClick={() => setIsMusicPopupOpen(true)}
+          className="group flex flex-col items-center gap-1 sm:gap-1.5 p-2 sm:p-3 rounded-2xl bg-white/95 hover:bg-orange-50 border border-stone-200/90 hover:border-orange-300 shadow-xl backdrop-blur-md transition-all duration-200 cursor-pointer active:scale-95 touch-manipulation"
+          title="Open Music Sanctuary (Lyria 3 Clip)"
+        >
+          <div className="relative flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-orange-500 text-white shadow-md group-hover:scale-105 transition-transform">
+            <Headphones className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="absolute -top-1 -right-1 flex h-2 sm:h-2.5 w-2 sm:w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 sm:h-2.5 w-2 sm:w-2.5 bg-orange-500"></span>
+            </span>
+          </div>
+          <span className="text-[10px] sm:text-[11px] font-bold text-stone-800 group-hover:text-orange-600 transition-colors">
+            Music
+          </span>
+          <span className="text-[8px] sm:text-[9px] font-mono text-stone-400 uppercase tracking-wider">
+            Pop
+          </span>
+          <div className="flex items-center gap-0.5 h-2.5 sm:h-3 px-0.5 sm:px-1 mt-0.5">
+            <span className="w-0.5 h-2 bg-orange-400 rounded-full animate-pulse" />
+            <span className="w-0.5 h-3 bg-orange-500 rounded-full animate-pulse delay-75" />
+            <span className="w-0.5 h-1.5 bg-orange-300 rounded-full animate-pulse delay-150" />
+            <span className="w-0.5 h-2.5 bg-orange-400 rounded-full animate-pulse delay-100" />
+          </div>
+        </button>
+      </div>
 
     </div>
   );

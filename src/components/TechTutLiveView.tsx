@@ -30,7 +30,7 @@ interface TechTutLiveViewProps {
   onOpenStudyMode?: (query?: string, subject?: string) => void;
 }
 
-type TutorPersona = 'astra' | 'vance' | 'coach';
+type TutorPersona = 'vance';
 
 interface LiveTurn {
   id: string;
@@ -58,7 +58,7 @@ export const TechTutLiveView: React.FC<TechTutLiveViewProps> = ({
   onAwardReward,
   onOpenStudyMode,
 }) => {
-  const [persona, setPersona] = useState<TutorPersona>('astra');
+  const [persona, setPersona] = useState<TutorPersona>('vance');
   const [speechRate, setSpeechRate] = useState<number>(1.0);
   const [isMuted, setIsMuted] = useState<boolean>(false);
   
@@ -74,13 +74,13 @@ export const TechTutLiveView: React.FC<TechTutLiveViewProps> = ({
     {
       id: 'welcome_turn',
       sender: 'techtut',
-      text: 'Hello Scholar! I am TechTut Stage, your interactive TechTut Live voice tutor. Tap the microphone or type any concept, and I will explain it aloud in real-time step by step.',
-      spokenText: 'Hello Scholar! I am TechTut Stage, your interactive TechTut Live voice tutor. Tap the microphone or select any topic, and I will explain it aloud in real-time step by step.',
-      visualSummary: 'TechTut Stage is active and listening. Ask any math, science, code, or exam problem.',
+      text: 'Greetings, Scholar. I am Professor Vance, your lead academic mentor and primary voice tutor on TechTut Live. Tap the microphone or enter any concept, and I will illuminate the derivation aloud step by step.',
+      spokenText: 'Greetings, Scholar. I am Professor Vance, your lead academic mentor and primary voice tutor on TechTut Live. Tap the microphone or select any topic, and I will illuminate the derivation aloud in real time step by step.',
+      visualSummary: 'Professor Vance is active and listening. Ask any math, physics, biology, code, or exam problem.',
       keyTakeaways: [
         'Hands-free voice recognition with real-time vocal feedback',
-        'Switch between Professor Vance, Astra, and Coach Leo',
-        'Ask follow-up questions or request derivations aloud'
+        'Professor Vance is your primary voice tutor with step-by-step rigor',
+        'Ask follow-up questions or request derivations aloud anytime'
       ],
       timestamp: Date.now()
     }
@@ -224,24 +224,22 @@ export const TechTutLiveView: React.FC<TechTutLiveViewProps> = ({
     if (!cleanSpeech) return;
 
     const utterance = new SpeechSynthesisUtterance(cleanSpeech);
-    utterance.rate = speechRate;
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
     
-    // Choose appropriate voice if available
+    // Professor Vance normal voice
     const voices = synthRef.current.getVoices();
     if (voices && voices.length > 0) {
-      if (persona === 'vance') {
-        const ukVoice = voices.find(v => v.lang.startsWith('en-GB') || v.name.includes('Daniel') || v.name.includes('Oliver') || v.name.includes('Male'));
-        if (ukVoice) utterance.voice = ukVoice;
-        utterance.pitch = 0.95;
-      } else if (persona === 'coach') {
-        const energetic = voices.find(v => v.name.includes('Alex') || v.name.includes('Natural') || v.lang.startsWith('en-US'));
-        if (energetic) utterance.voice = energetic;
-        utterance.pitch = 1.05;
-      } else {
-        const calm = voices.find(v => v.name.includes('Samantha') || v.name.includes('Victoria') || v.name.includes('Female') || v.lang.startsWith('en'));
-        if (calm) utterance.voice = calm;
-        utterance.pitch = 1.0;
-      }
+      const vanceVoice = voices.find(v => 
+        v.name.includes('Daniel') || 
+        v.name.includes('David') || 
+        v.name.includes('George') || 
+        v.name.includes('Oliver') ||
+        v.lang === 'en-GB' ||
+        v.name.includes('Google US English') ||
+        (v.lang.startsWith('en') && v.default)
+      ) || voices.find(v => v.lang.startsWith('en')) || voices[0];
+      if (vanceVoice) utterance.voice = vanceVoice;
     }
 
     utterance.onstart = () => {
@@ -401,54 +399,13 @@ export const TechTutLiveView: React.FC<TechTutLiveViewProps> = ({
           </div>
         </div>
 
-        {/* Persona Selectors */}
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs text-stone-400 font-medium hidden sm:inline">Tutor Voice:</span>
-          
-          <button
-            onClick={() => {
-              setPersona('astra');
-              handleStopSpeaking();
-            }}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-              persona === 'astra'
-                ? 'bg-orange-500 text-white shadow-xs'
-                : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-            }`}
-          >
-            <span>🌟</span>
-            <span>Astra (Calm)</span>
-          </button>
-
-          <button
-            onClick={() => {
-              setPersona('vance');
-              handleStopSpeaking();
-            }}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-              persona === 'vance'
-                ? 'bg-orange-500 text-white shadow-xs'
-                : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-            }`}
-          >
-            <span>🎓</span>
-            <span>Prof. Vance (Rigorous)</span>
-          </button>
-
-          <button
-            onClick={() => {
-              setPersona('coach');
-              handleStopSpeaking();
-            }}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-              persona === 'coach'
-                ? 'bg-orange-500 text-white shadow-xs'
-                : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-            }`}
-          >
-            <span>⚡</span>
-            <span>Coach Leo (Blitz)</span>
-          </button>
+        {/* Single Dedicated Voice: Prof Vance */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-stone-100 border border-stone-200 text-xs font-semibold text-stone-800">
+            <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+            <span>Voice Tutor: Prof. Vance</span>
+            <span className="text-[10px] text-stone-500 font-normal font-mono">(Standard)</span>
+          </div>
         </div>
       </div>
 

@@ -56,6 +56,7 @@ import {
   signOutUser 
 } from '../lib/firebase';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
+import { CosmicCustomizer } from './CosmicCustomizer';
 
 interface AccountSystemViewProps {
   userProfile: UserProfile;
@@ -86,7 +87,7 @@ export const AccountSystemView: React.FC<AccountSystemViewProps> = ({
   onSwitchAccount,
   onOpenSocial,
 }) => {
-  const [activeTab, setActiveTab] = useState<'profile' | 'email' | 'friends' | 'flashcards' | 'answers'>('email');
+  const [activeTab, setActiveTab] = useState<'profile' | 'email' | 'friends' | 'flashcards' | 'answers' | 'cosmic'>('email');
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState(userProfile.name);
   
@@ -591,6 +592,16 @@ export const AccountSystemView: React.FC<AccountSystemViewProps> = ({
             <span className="w-2 h-2 rounded-full bg-emerald-400" />
           </button>
           
+          <button
+            onClick={() => setActiveTab('cosmic')}
+            className={`px-4 py-2 rounded-full transition-all flex items-center gap-1.5 cursor-pointer ${
+              activeTab === 'cosmic' ? 'bg-orange-500 text-white shadow-xs font-semibold' : 'text-stone-600 hover:text-stone-900'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Cosmic Customizer</span>
+          </button>
+
           <button
             onClick={() => setActiveTab('profile')}
             className={`px-4 py-2 rounded-full transition-all cursor-pointer ${
@@ -1468,6 +1479,16 @@ export const AccountSystemView: React.FC<AccountSystemViewProps> = ({
           </div>
 
         </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 6. COSMIC CUSTOMIZER (STAR PATTERNS & AMBIENT GLOW PREFERENCES) */}
+      {/* ========================================================================= */}
+      {activeTab === 'cosmic' && (
+        <CosmicCustomizer
+          userProfile={userProfile}
+          onUpdateProfile={onUpdateProfile}
+        />
       )}
 
       {/* ========================================================================= */}

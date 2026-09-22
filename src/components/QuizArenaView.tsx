@@ -361,7 +361,7 @@ export const QuizArenaView: React.FC<QuizArenaViewProps> = ({ userProfile }) => 
                     type="text"
                     inputMode="numeric"
                     pattern="[0-9]*"
-                    maxLength={14} // formatted with spacing e.g. 4829 - 1038 - 47
+                    maxLength={18} // formatted with spacing e.g. 4829 - 1038 - 47 (16 chars)
                     value={joinCodeInput}
                     onChange={(e) => {
                       const numbersOnly = e.target.value.replace(/\D/g, '').slice(0, 10);

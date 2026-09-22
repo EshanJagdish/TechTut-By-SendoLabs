@@ -80,7 +80,7 @@ export const StudyModeView: React.FC<StudyModeViewProps> = ({
   const STUDY_SOUNDSCAPES = [
     { id: 'celestial_lofi', label: 'Soft Lo-Fi', mood: 'Relaxed & Rhythmic', icon: '🎧' },
     { id: 'calm_focus', label: 'Alpha Waves', mood: 'Logic & Problem Solving', icon: '🌊' },
-    { id: 'dreamy_starlight', label: 'Starlight Dream', mood: 'Calm & Flow', icon: '✨' },
+    { id: 'dreamy_starlight', label: 'TechTut Main Theme', mood: 'Calm & Flow', icon: '✨' },
     { id: 'midnight_river', label: 'Midnight River', mood: 'History & Essay Reading', icon: '🌙' },
     { id: 'deep_nebula', label: 'Theta Zen', mood: 'Deep Memory & Mnemonics', icon: '🌌' },
   ];
@@ -160,63 +160,60 @@ export const StudyModeView: React.FC<StudyModeViewProps> = ({
   };
 
   return (
-    <div id="study-mode-container" className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8 pb-32">
+    <div id="study-mode-container" className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 pb-32">
       
       {/* Hero Welcome Header */}
-      <div className="text-center space-y-3">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-orange-50 border border-orange-200 text-orange-700 text-xs font-semibold uppercase tracking-wider">
+      <div className="text-center space-y-2.5">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stone-100 border border-stone-200 text-stone-700 text-xs font-medium">
           <Sparkles className="w-3.5 h-3.5 text-orange-500" />
-          <span>TechTut Scholar Engine (Standard) • Academically Rigorous, Focused & Clean</span>
+          <span>Scholar Studio • Derivations & Active Inquiry</span>
         </div>
-        <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-stone-900">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900">
           What concept shall we illuminate today?
         </h1>
-        <p className="text-sm sm:text-base text-stone-600 max-w-2xl mx-auto leading-relaxed">
-          Enter any homework problem, theorem, or question. Receive serene step-by-step guidance, memory anchors, flashcards, and paced rhythm.
+        <p className="text-sm text-stone-600 max-w-xl mx-auto leading-relaxed">
+          Enter any homework problem, theorem, or inquiry for step-by-step derivations, memory anchors, flashcards, and paced study.
         </p>
 
         {/* Workspace Quick-Links */}
         {onOpenWorkspace && (
-          <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
             <button
               onClick={() => onOpenWorkspace('classroom')}
-              className="px-3.5 py-1.5 rounded-full bg-white hover:bg-stone-50 border border-stone-200 text-stone-700 hover:text-stone-900 text-xs flex items-center gap-2 transition-all shadow-xs cursor-pointer"
+              className="px-3 py-1 rounded-full bg-white hover:bg-stone-50 border border-stone-200 text-stone-700 hover:text-stone-900 text-xs flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
             >
-              <GraduationCap className="w-3.5 h-3.5 text-orange-600" />
+              <GraduationCap className="w-3.5 h-3.5 text-stone-600" />
               <span>Google Classroom</span>
-              <span className="text-[9px] px-1 rounded bg-amber-100 text-amber-800 font-medium">Maint.</span>
             </button>
             <button
               onClick={() => onOpenWorkspace('drive')}
-              className="px-3.5 py-1.5 rounded-full bg-white hover:bg-stone-50 border border-stone-200 text-stone-700 hover:text-stone-900 text-xs flex items-center gap-2 transition-all shadow-xs cursor-pointer"
+              className="px-3 py-1 rounded-full bg-white hover:bg-stone-50 border border-stone-200 text-stone-700 hover:text-stone-900 text-xs flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
             >
-              <FolderSearch className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Drive Study Files</span>
-              <span className="text-[9px] px-1 rounded bg-amber-100 text-amber-800 font-medium">Maint.</span>
+              <FolderSearch className="w-3.5 h-3.5 text-stone-600" />
+              <span>Drive Files</span>
             </button>
             <button
               onClick={() => onOpenWorkspace('keep')}
-              className="px-3.5 py-1.5 rounded-full bg-white hover:bg-stone-50 border border-stone-200 text-stone-700 hover:text-stone-900 text-xs flex items-center gap-2 transition-all shadow-xs cursor-pointer"
+              className="px-3 py-1 rounded-full bg-white hover:bg-stone-50 border border-stone-200 text-stone-700 hover:text-stone-900 text-xs flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
             >
-              <StickyNote className="w-3.5 h-3.5 text-amber-600" />
+              <StickyNote className="w-3.5 h-3.5 text-stone-600" />
               <span>Scholar Notes</span>
-              <span className="text-[9px] px-1 rounded bg-amber-100 text-amber-800 font-medium">Maint.</span>
             </button>
           </div>
         )}
       </div>
 
-      {/* Integrated Study Soundscape Bar (Music System & Study Mode Co-integration) */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-white border border-stone-200/90 shadow-xs space-y-2.5">
+      {/* Integrated Study Soundscape Bar */}
+      <div className="p-3.5 sm:p-4 rounded-2xl bg-white border border-stone-200/80 shadow-xs space-y-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Music className="w-4 h-4 text-orange-500" />
-            <span className="text-xs font-bold text-stone-900">Study Soundscape Harmony</span>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-orange-50 border border-orange-200 text-orange-700 font-medium">
+            <Music className="w-3.5 h-3.5 text-orange-500" />
+            <span className="text-xs font-semibold text-stone-900">Study Soundscape</span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 font-medium">
               Suggested for {selectedSubject}: {getSuggestedTrackForSubject(selectedSubject).mood}
             </span>
           </div>
-          <span className="text-[11px] text-stone-400 hidden sm:inline font-mono">Binaural & Ambient Synthesis</span>
+          <span className="text-[11px] text-stone-400 hidden sm:inline font-mono">Binaural Synthesis</span>
         </div>
 
         <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
@@ -226,15 +223,15 @@ export const StudyModeView: React.FC<StudyModeViewProps> = ({
               <button
                 key={sc.id}
                 onClick={() => handleSelectSoundscape(sc.id)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-medium whitespace-nowrap border flex items-center gap-2 transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap border flex items-center gap-1.5 transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-orange-50 border-orange-400 text-orange-800 shadow-xs font-semibold'
+                    ? 'bg-orange-500 border-orange-500 text-white shadow-xs font-semibold'
                     : 'bg-stone-50 border-stone-200 text-stone-600 hover:text-stone-900 hover:bg-stone-100'
                 }`}
               >
                 <span>{sc.icon}</span>
                 <span>{sc.label}</span>
-                {isActive && <Volume2 className="w-3 h-3 text-orange-500 animate-pulse" />}
+                {isActive && <Volume2 className="w-3 h-3 text-white animate-pulse" />}
               </button>
             );
           })}
@@ -242,7 +239,7 @@ export const StudyModeView: React.FC<StudyModeViewProps> = ({
       </div>
 
       {/* Input Console */}
-      <div className="relative rounded-2xl bg-white border border-stone-200/90 p-5 sm:p-7 shadow-xs">
+      <div className="relative rounded-2xl bg-white border border-stone-200/80 p-5 sm:p-6 shadow-xs">
         
         <div className="space-y-4">
           <div className="relative">
@@ -252,7 +249,7 @@ export const StudyModeView: React.FC<StudyModeViewProps> = ({
               value={inputQuery}
               onChange={(e) => setInputQuery(e.target.value)}
               placeholder="e.g. Derive the quadratic formula using completing the square, or explain cellular respiration step-by-step..."
-              className="w-full bg-stone-50 border border-stone-200 rounded-xl p-4 text-sm sm:text-base text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-orange-500 focus:bg-white transition-colors resize-none"
+              className="w-full bg-stone-50/70 border border-stone-200 rounded-xl p-4 text-sm sm:text-base text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-orange-500 focus:bg-white transition-colors resize-none"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
                   handleSolve();
@@ -264,13 +261,13 @@ export const StudyModeView: React.FC<StudyModeViewProps> = ({
           {/* Quick presets */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs text-stone-500">
-              <span className="flex items-center gap-1.5 font-semibold text-stone-700">
+              <span className="flex items-center gap-1.5 font-medium text-stone-700">
                 <Lightbulb className="w-3.5 h-3.5 text-amber-500" />
                 Quick Inquiries
               </span>
-              <span className="text-[11px] text-stone-400 font-mono">Press Ctrl+Enter to solve</span>
+              <span className="text-[11px] text-stone-400 font-mono">Press ⌘+Enter to solve</span>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5">
               {PRESET_TOPICS.map((preset, idx) => (
                 <button
                   key={idx}
@@ -279,9 +276,9 @@ export const StudyModeView: React.FC<StudyModeViewProps> = ({
                     setSelectedSubject(preset.subject);
                     handleSolve(preset.prompt);
                   }}
-                  className="px-3 py-1.5 rounded-lg bg-stone-50 hover:bg-orange-50/60 border border-stone-200 hover:border-orange-300 text-stone-700 hover:text-stone-900 text-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                  className="px-2.5 py-1 rounded-full bg-stone-100 hover:bg-orange-50 border border-stone-200 hover:border-orange-200 text-stone-700 hover:text-stone-900 text-xs transition-all flex items-center gap-1.5 cursor-pointer"
                 >
-                  <span className="text-orange-600 text-[10px] font-bold">{preset.subject}</span>
+                  <span className="text-orange-600 text-[10px] font-semibold">{preset.subject}</span>
                   <span>{preset.label}</span>
                 </button>
               ))}
@@ -292,14 +289,14 @@ export const StudyModeView: React.FC<StudyModeViewProps> = ({
           <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
             <div className="flex items-center gap-2 text-xs text-stone-600">
               <Compass className="w-3.5 h-3.5 text-orange-500" />
-              <span>Tailored for <strong className="text-stone-900 font-semibold">{educationLevel.replace('_', ' ').toUpperCase()}</strong> level</span>
+              <span>Tailored for <strong className="text-stone-900 font-medium">{educationLevel.replace('_', ' ').toUpperCase()}</strong> level</span>
             </div>
 
             <button
               id="study-solve-btn"
               onClick={() => handleSolve()}
               disabled={isLoading || !inputQuery.trim()}
-              className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="w-full sm:w-auto px-5 py-2 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-medium text-sm flex items-center justify-center gap-2 shadow-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {isLoading ? (
                 <>
@@ -308,9 +305,9 @@ export const StudyModeView: React.FC<StudyModeViewProps> = ({
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-4 h-4 text-orange-100" />
+                  <Sparkles className="w-4 h-4 text-white" />
                   <span>Illuminate Solution</span>
-                  <ChevronRight className="w-4 h-4 text-orange-100" />
+                  <ChevronRight className="w-4 h-4 text-white/80" />
                 </>
               )}
             </button>
@@ -337,18 +334,18 @@ export const StudyModeView: React.FC<StudyModeViewProps> = ({
         <div id="solution-board" className="space-y-8 animate-in fade-in duration-500">
           
           {/* Header & Save Action Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-3 p-4 sm:p-5 rounded-2xl bg-white border border-stone-200/90 shadow-xs">
+          <div className="flex flex-wrap items-center justify-between gap-3 p-4 sm:p-5 rounded-2xl bg-white border border-stone-200/80 shadow-xs">
             <div>
-              <span className="text-[10px] font-bold text-orange-600 uppercase tracking-wider font-mono">
+              <span className="text-[10px] font-semibold text-orange-600 uppercase tracking-wider font-mono">
                 {solution.questionType ? `${solution.questionType.replace('_', ' ')} • ${solution.topic}` : solution.topic}
               </span>
-              <h2 className="text-lg font-bold text-stone-900">{solution.question}</h2>
+              <h2 className="text-lg font-semibold text-stone-900">{solution.question}</h2>
             </div>
             
             <div className="flex items-center gap-2">
               <button
                 onClick={() => onSaveSolution(solution)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
                   savedSolutionIds.has(solution.id)
                     ? 'bg-emerald-50 text-emerald-700 border border-emerald-300'
                     : 'bg-stone-50 text-stone-700 hover:text-stone-900 border border-stone-200 hover:border-orange-300'
@@ -370,7 +367,7 @@ export const StudyModeView: React.FC<StudyModeViewProps> = ({
               <button
                 id="activate-addon-btn"
                 onClick={() => onActivateAddOn(solution)}
-                className="px-3.5 py-1.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+                className="px-3.5 py-1.5 rounded-full bg-orange-500 hover:bg-orange-600 text-white text-xs font-medium flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
               >
                 <Compass className="w-3.5 h-3.5 text-white" />
                 <span>Activate Add-On Mode →</span>
@@ -379,21 +376,21 @@ export const StudyModeView: React.FC<StudyModeViewProps> = ({
           </div>
 
           {/* Intuition / Summary Card */}
-          <div className="p-6 sm:p-8 rounded-2xl bg-white border border-stone-200/90 shadow-xs space-y-4">
+          <div className="p-5 sm:p-6 rounded-2xl bg-white border border-stone-200/80 shadow-xs space-y-3.5">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-orange-700 text-xs font-bold uppercase tracking-wider">
+              <div className="flex items-center gap-2 text-stone-800 text-xs font-semibold">
                 <Sparkles className="w-4 h-4 text-orange-500" />
-                <span>Conceptual Intuition & Big Picture</span>
+                <span>Conceptual Intuition</span>
               </div>
-              <span className="px-2.5 py-0.5 bg-orange-50 rounded-full text-[10px] text-orange-700 border border-orange-200 font-semibold uppercase tracking-wider">
-                STUDY MODE
+              <span className="px-2.5 py-0.5 bg-stone-100 rounded-full text-[10px] text-stone-600 font-medium">
+                SCHOLAR NOTE
               </span>
             </div>
             <p className="text-sm sm:text-base text-stone-800 leading-relaxed font-serif italic">
               "{solution.dreamySummary}"
             </p>
             {solution.conceptOrigin && (
-              <div className="p-4 bg-orange-50/60 border-l-2 border-orange-400 rounded-r-xl italic text-xs sm:text-sm text-stone-700 flex items-center gap-2">
+              <div className="p-3.5 bg-stone-50 border-l-2 border-orange-400 rounded-r-xl text-xs sm:text-sm text-stone-700 flex items-center gap-2">
                 <Compass className="w-4 h-4 text-orange-500 flex-shrink-0" />
                 <span><strong>Origin Note:</strong> {solution.conceptOrigin}</span>
               </div>
@@ -403,7 +400,7 @@ export const StudyModeView: React.FC<StudyModeViewProps> = ({
           {/* Step-by-Step Milestones */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-stone-900 flex items-center gap-2">
+              <h3 className="text-base font-semibold text-stone-900 flex items-center gap-2">
                 <Layers className="w-4 h-4 text-orange-500" />
                 {solution.questionType === 'calculation' ? 'Step-by-Step Mathematical Derivation' :
                  solution.questionType === 'coding' ? 'Algorithmic Walkthrough & Logic' :
@@ -411,21 +408,21 @@ export const StudyModeView: React.FC<StudyModeViewProps> = ({
                  solution.questionType === 'test_prep' ? 'Exam Strategy & Distractor Elimination' :
                  'Step-by-Step Conceptual Mechanism'}
               </h3>
-              <span className="text-xs text-stone-500">{solution.steps.length} Milestones</span>
+              <span className="text-xs text-stone-500 font-mono">{solution.steps.length} Milestones</span>
             </div>
 
             <div className="space-y-3">
               {solution.steps.map((step, idx) => (
                 <div 
                   key={idx}
-                  className="rounded-2xl bg-white border border-stone-200/90 p-5 sm:p-6 shadow-xs hover:border-orange-300 transition-all"
+                  className="rounded-2xl bg-white border border-stone-200/80 p-5 sm:p-6 shadow-xs hover:border-orange-300 transition-all"
                 >
-                  <div className="flex items-start gap-4">
-                    <div className="w-8 h-8 rounded-xl bg-orange-50 border border-orange-200 flex items-center justify-center shrink-0 text-xs text-orange-700 font-bold">
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-7 h-7 rounded-full bg-stone-100 border border-stone-200 flex items-center justify-center shrink-0 text-xs text-stone-800 font-mono font-semibold">
                       {step.stepNumber}
                     </div>
                     <div className="space-y-2 flex-1">
-                      <h4 className="text-sm font-bold text-stone-900">
+                      <h4 className="text-sm font-semibold text-stone-900">
                         {step.title}
                       </h4>
                       <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
@@ -433,7 +430,7 @@ export const StudyModeView: React.FC<StudyModeViewProps> = ({
                       </p>
 
                       {step.derivation && (
-                        <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200 font-mono text-xs text-stone-800 overflow-x-auto">
+                        <div className="p-3 rounded-xl bg-stone-50 border border-stone-200 font-mono text-xs text-stone-800 overflow-x-auto">
                           {step.derivation}
                         </div>
                       )}

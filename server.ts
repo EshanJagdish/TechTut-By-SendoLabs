@@ -767,10 +767,11 @@ function generateProceduralWavBase64(promptText: string, durationSeconds: number
 // 3.5 TechTut Harmony API (Lyria 3 Music Generation & Storage)
 app.post("/api/music/generate", async (req, res) => {
   try {
-    const { prompt, model, duration, title, imageData, mimeType } = req.body;
+    const { prompt, duration, title, imageData, mimeType } = req.body;
     const cleanPrompt = (prompt || "Ambient serene study focus soundscape with warm soft piano chords and celestial resonance").trim();
     const cleanTitle = (title || "Study Sanctuary Echoes").trim();
-    const selectedModel = model === "lyria-3-pro-preview" ? "lyria-3-pro-preview" : "lyria-3-clip-preview";
+    // Exclusively single mode: Lyria 3 Clip only
+    const selectedModel = "lyria-3-clip-preview";
 
     const ai = getAiClient();
     if (!ai) {
@@ -784,8 +785,8 @@ app.post("/api/music/generate", async (req, res) => {
         audioBase64: fallbackWav,
         mimeType: "audio/wav",
         lyrics: `[TechTut Harmony Synthesis] Harmonic study waves calibrated for: ${cleanPrompt}`,
-        duration: selectedModel === "lyria-3-pro-preview" ? "60s" : "30s",
-        note: "Lyria 3 neural music preview is active with a paid GEMINI_API_KEY."
+        duration: "30s",
+        note: "Lyria 3 Clip neural music engine active."
       });
     }
 
@@ -839,7 +840,7 @@ app.post("/api/music/generate", async (req, res) => {
           audioBase64: fallbackWav,
           mimeType: "audio/wav",
           lyrics: lyrics || `[TechTut Harmony] Ambient resonance generated for: ${cleanPrompt}`,
-          duration: selectedModel === "lyria-3-pro-preview" ? "60s" : "30s"
+          duration: "30s"
         });
       }
 
@@ -852,7 +853,7 @@ app.post("/api/music/generate", async (req, res) => {
         audioBase64,
         mimeType: audioMimeType,
         lyrics,
-        duration: selectedModel === "lyria-3-pro-preview" ? "Full Track" : "30s"
+        duration: "30s"
       });
     } catch (modelErr: any) {
       console.warn("Lyria model generation notice:", modelErr?.message || modelErr);
@@ -866,7 +867,7 @@ app.post("/api/music/generate", async (req, res) => {
         audioBase64: fallbackWav,
         mimeType: "audio/wav",
         lyrics: `[TechTut Harmony Synthesis] Ambient study wave crafted for: ${cleanPrompt}`,
-        duration: selectedModel === "lyria-3-pro-preview" ? "60s" : "30s",
+        duration: "30s",
         errorNotice: modelErr?.message
       });
     }
@@ -899,7 +900,99 @@ function generateFallbackGame(
   const cleanTopic = studyText.trim().slice(0, 60) || (hasImage ? "Diagram Analysis" : "Core Calculus & Science");
   const gameId = "game_" + Date.now();
 
-  if (archetype === "matching") {
+  if (archetype === "cosmic_defender") {
+    return {
+      id: gameId,
+      title: `${cleanTopic} • Cosmic Defender`,
+      archetype: "cosmic_defender",
+      topic: cleanTopic,
+      sourceType: hasImage ? "image" : "text",
+      description: `Steer your spacecraft through asteroid belts. Shoot the target answers for "${cleanTopic}" and dodge false distractors!`,
+      rules: "Use Arrow keys or on-screen buttons to maneuver, Spacebar or Fire button to blast target asteroids.",
+      targetLevel: level,
+      gameplayItems: [
+        {
+          id: "cd_1",
+          prompt: `Target for ${cleanTopic}: Identify the primary principle`,
+          targetAnswer: "Conserved Invariant Quantity",
+          distractors: ["Arbitrary Random Noise", "Frictionless False Ideal", "Inconsistent Metric"],
+          explanation: "Invariance under continuous symmetry dictates conservation laws."
+        },
+        {
+          id: "cd_2",
+          prompt: `Target for ${cleanTopic}: What guarantees theorem convergence?`,
+          targetAnswer: "Bounded Domain & Monotonicity",
+          distractors: ["Divergent Oscillations", "Complex Infinity", "Undefined Pole"],
+          explanation: "Monotone convergence theorem guarantees a finite limit."
+        },
+        {
+          id: "cd_3",
+          prompt: `Target for ${cleanTopic}: Key rate of change relationship`,
+          targetAnswer: "Instantaneous Derivative Limit",
+          distractors: ["Static Secant Approximation", "Discontinuous Jump", "Zero Differential"],
+          explanation: "The derivative measures local sensitivity."
+        }
+      ],
+      xpReward: 120,
+      stardustReward: 50
+    };
+  } else if (archetype === "scholar_runner") {
+    return {
+      id: gameId,
+      title: `${cleanTopic} • Scholar Sprint Runner`,
+      archetype: "scholar_runner",
+      topic: cleanTopic,
+      sourceType: hasImage ? "image" : "text",
+      description: `Sprint across knowledge platforms! Jump over hazard obstacles and answer checkpoint gates to trigger supersonic dash speed!`,
+      rules: "Tap Space or Up button to jump over red error spikes. Answer checkpoint questions to maintain momentum.",
+      targetLevel: level,
+      gameplayItems: [
+        {
+          id: "sr_1",
+          prompt: `In "${cleanTopic}", what is the key dimensional unit check?`,
+          targetAnswer: "Homogeneous additive terms",
+          distractors: ["Mismatched scalar units", "Ignoring exponents", "Negative mass ratio"],
+          explanation: "All physical equations require dimensional homogeneity."
+        },
+        {
+          id: "sr_2",
+          prompt: `Essential equation formulation in "${cleanTopic}":`,
+          targetAnswer: "First-order differential balance",
+          distractors: ["Constant offset ignoring rates", "Disregard boundary terms", "Linear approximation only"],
+          explanation: "Formulating the governing differential equation reveals the dynamics."
+        }
+      ],
+      xpReward: 110,
+      stardustReward: 45
+    };
+  } else if (archetype === "gravity_catcher") {
+    return {
+      id: gameId,
+      title: `${cleanTopic} • Gravity Catcher`,
+      archetype: "gravity_catcher",
+      topic: cleanTopic,
+      sourceType: hasImage ? "image" : "text",
+      description: `Catch correct conceptual principles falling from the sky while dodging distracting errors!`,
+      rules: "Move the catcher left and right to collect target terms into your vessel.",
+      targetLevel: level,
+      gameplayItems: [
+        {
+          id: "gc_1",
+          prompt: `Target to catch: Valid principle for ${cleanTopic}`,
+          targetAnswer: "Continuity & Smoothness",
+          distractors: ["Asymptotic Divergence", "Singularity Pole", "Imaginary Resistor"]
+        },
+        {
+          id: "gc_2",
+          prompt: `Target to catch: Core Law of ${cleanTopic}`,
+          targetAnswer: "Action & Reaction Balance",
+          distractors: ["Isolated Unbalanced Force", "Spontaneous Momentum Gain"]
+        }
+      ],
+      xpReward: 100,
+      stardustReward: 40
+    };
+  } else if (archetype === "matching") {
     return {
       id: gameId,
       title: `${cleanTopic} • Memory Matrix`,
@@ -1082,10 +1175,10 @@ app.post("/api/games/generate", async (req, res) => {
 Your mission is to generate highly engaging, academically rigorous, playable educational games based directly on study texts, lecture notes, textbook passages, formulas, OR uploaded diagrams/photos.
 Target Level: ${targetLevel}.
 Topic: ${cleanTopic}.
-Desired Game Archetype: "${selectedArchetype}" (one of: 'blitz', 'matching', 'sequence', 'diagram_detective').
+Desired Game Archetype: "${selectedArchetype}" (one of: 'cosmic_defender', 'scholar_runner', 'gravity_catcher', 'html_sandbox', 'blitz', 'matching', 'sequence', 'diagram_detective').
 
 RULES:
-- Make every question, card, or step deeply connected to the provided text or image.
+- Make every question, card, target, or step deeply connected to the provided text or image.
 - Tone: Whitish-orangish, minimal, clean, intellectual, motivating, and sharp.
 - Return ONLY valid JSON matching this schema:
 {
@@ -1097,6 +1190,18 @@ RULES:
   "description": "2-sentence encouraging game description",
   "rules": "Brief instructions on how to play and score",
   "targetLevel": "${targetLevel}",
+  ${['cosmic_defender', 'scholar_runner', 'gravity_catcher'].includes(selectedArchetype) ? `
+  "gameplayItems": [
+    {
+      "id": "item_1",
+      "prompt": "Specific equation, question or term prompt",
+      "targetAnswer": "Correct answer / target to shoot or catch",
+      "distractors": ["Incorrect distractor 1", "Incorrect distractor 2", "Incorrect distractor 3"],
+      "explanation": "Why this target is mathematically or physically correct"
+    }
+  ],` : ''}
+  ${selectedArchetype === 'html_sandbox' ? `
+  "htmlContent": "<!DOCTYPE html><html>...Complete self-contained HTML5 Canvas or CSS game code with requestAnimationFrame, controls, and study questions...</html>",` : ''}
   ${selectedArchetype === 'blitz' ? `
   "blitzQuestions": [
     {

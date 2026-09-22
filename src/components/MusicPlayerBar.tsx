@@ -23,7 +23,7 @@ import { MusicTrack } from '../types';
 export const TRACK_CATALOG: MusicTrack[] = [
   {
     id: 'dreamy_starlight',
-    title: 'Dreamy Starlight',
+    title: 'TechTut Main Theme',
     subtitle: '432Hz ambient chord swells & celestial chimes',
     category: 'dreamy',
     moodTags: ['Curiosity', 'Relaxed Encoding', 'Gentle Wonder'],

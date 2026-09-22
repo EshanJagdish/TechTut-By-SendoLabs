@@ -13,6 +13,7 @@ export type AppMode =
   | 'music' 
   | 'quiz'
   | 'social'
+  | 'gallery'
   | 'account' 
   | 'workspace'
   | 'dev_blueprint';
@@ -148,7 +149,16 @@ export interface AddOnInsight {
   };
 }
 
-export type GameArchetype = 'blitz' | 'matching' | 'sequence' | 'diagram_detective';
+export type GameArchetype = 
+  | 'cosmic_defender' 
+  | 'scholar_runner' 
+  | 'gravity_catcher' 
+  | 'dungeon_riddle'
+  | 'html_sandbox'
+  | 'blitz' 
+  | 'matching' 
+  | 'sequence' 
+  | 'diagram_detective';
 
 export interface GeneratedAiGame {
   id: string;
@@ -160,6 +170,17 @@ export interface GeneratedAiGame {
   description: string;
   rules: string;
   targetLevel: EducationLevel;
+  // Real Interactive HTML5 Canvas / Gameplay Items
+  htmlContent?: string; // If 'html_sandbox', full self-contained HTML5 Canvas game with controls and loop
+  gameplayItems?: {
+    id: string;
+    prompt: string;
+    targetAnswer: string;
+    distractors: string[];
+    explanation?: string;
+    speedOrDifficulty?: number;
+  }[];
+  // Quiz and puzzle formats:
   blitzQuestions?: {
     id: string;
     prompt: string;
@@ -190,6 +211,38 @@ export interface GeneratedAiGame {
   }[];
   xpReward: number;
   stardustReward: number;
+  highScore?: number;
+  savedToGallery?: boolean;
+}
+
+export type GalleryItemType = 'game' | 'music' | 'quiz' | 'study' | 'workspace';
+
+export interface GalleryItem {
+  id: string;
+  type: GalleryItemType;
+  title: string;
+  subtitle: string;
+  topic: string;
+  dateAdded: number;
+  tags: string[];
+  thumbnailUrl?: string;
+  badge?: string;
+  favorite?: boolean;
+  playCount?: number;
+  payload: {
+    // For games:
+    gameData?: GeneratedAiGame;
+    // For music:
+    musicTrack?: GeneratedMusicTrack | MusicTrack;
+    audioUrl?: string;
+    // For quizzes:
+    quizSession?: QuizSession;
+    quizCode?: string;
+    // For study derivations:
+    studySolution?: StudySolution;
+    // For workspace:
+    note?: CelestialNote;
+  };
 }
 
 export interface Badge {
@@ -212,6 +265,17 @@ export interface DailyChallenge {
   completed: boolean;
 }
 
+export type StarPattern = 'constellation' | 'spiral_galaxy' | 'nebula_drift' | 'zenith_cluster' | 'minimalist_void';
+export type AmbientGlowColor = 'warm_amber' | 'celestial_indigo' | 'aurora_emerald' | 'solar_citrus' | 'rose_quartz' | 'obsidian_mono';
+
+export interface CosmicCustomizerSettings {
+  starPattern: StarPattern;
+  ambientGlowColor: AmbientGlowColor;
+  starsEnabled: boolean;
+  glowIntensity: 'subtle' | 'moderate' | 'radiant';
+  particleSpeed: 'still' | 'gentle' | 'cosmic';
+}
+
 export interface EmailPreferences {
   dailyStudyReminder: boolean;
   weeklyProgressDigest: boolean;
@@ -225,6 +289,7 @@ export interface UserProfile {
   email?: string;
   emailVerified?: boolean;
   emailPreferences?: EmailPreferences;
+  cosmicSettings?: CosmicCustomizerSettings;
   title: string;
   avatar: string;
   level: EducationLevel;

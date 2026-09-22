@@ -82,100 +82,107 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header id="techtut-header" className="sticky top-0 z-40 w-full px-3 sm:px-6 pt-3 pb-2">
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between h-16 px-4 sm:px-6 rounded-2xl bg-white/95 border border-stone-200/90 backdrop-blur-md shadow-xs">
+        <div className="flex items-center justify-start gap-2 sm:gap-3 h-14 px-3 sm:px-4 rounded-2xl bg-white/90 border border-stone-200/80 backdrop-blur-md shadow-xs overflow-x-auto scrollbar-none">
           
-          {/* Brand Identity */}
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => onSelectMode('study')}>
-            <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-orange-500 text-white font-bold shadow-xs">
-              <span className="text-base font-black">T</span>
+          {/* Brand Identity (Leftmost) */}
+          <div className="flex items-center gap-2.5 cursor-pointer select-none shrink-0" onClick={() => onSelectMode('study')}>
+            <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-orange-500 text-white font-bold shadow-xs">
+              <span className="text-sm font-black">T</span>
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-bold tracking-tight text-stone-900 flex items-center gap-1">
-                  TechTut
-                  <span className="w-1.5 h-1.5 rounded-full bg-orange-500" />
-                </span>
-                <span className="px-2 py-0.5 bg-orange-100 rounded-full text-[10px] text-orange-800 border border-orange-200 font-extrabold tracking-wide">
-                  V2.5
-                </span>
-                <span className="hidden sm:inline-block px-2 py-0.5 bg-orange-50 rounded-full text-[10px] text-orange-700 border border-orange-200 font-semibold">
-                  SendoLabs
-                </span>
-              </div>
-              <p className="text-[11px] text-stone-500 font-medium">
-                Whitish • Orangish • Minimal Clean
-              </p>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold tracking-tight text-stone-900">
+                TechTut
+              </span>
+              <span className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+              <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[10px] font-medium bg-stone-100 text-stone-600 border border-stone-200">
+                Studio
+              </span>
             </div>
           </div>
 
-          {/* Navigation Modes */}
-          <nav id="techtut-nav" className="hidden md:flex items-center gap-1 bg-stone-100/90 p-1 rounded-xl border border-stone-200/70">
+          <div className="h-5 w-px bg-stone-200 shrink-0 hidden md:block" />
+
+          {/* Navigation Modes (Left Aligned) */}
+          <nav id="techtut-nav" className="hidden md:flex items-center gap-0.5 bg-stone-100/80 p-1 rounded-full border border-stone-200/60 shrink-0">
             <button
               id="nav-study-mode"
               onClick={() => onSelectMode('study')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-all cursor-pointer ${
                 currentMode === 'study'
-                  ? 'bg-orange-500 text-white shadow-xs'
-                  : 'text-stone-600 hover:text-stone-900 hover:bg-white/80'
+                  ? 'bg-white text-stone-900 shadow-xs font-semibold'
+                  : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/40 font-medium'
               }`}
-              title="TechTut Scholar Engine - Standard"
+              title="TechTut Scholar Studio"
             >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Scholar</span>
+              <Sparkles className="w-3.5 h-3.5 text-orange-500" />
+              <span>Scholar Studio</span>
             </button>
 
             <button
               id="nav-live-mode"
               onClick={() => onSelectMode('live')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-all cursor-pointer ${
                 currentMode === 'live'
-                  ? 'bg-orange-500 text-white shadow-xs'
-                  : 'text-stone-600 hover:text-stone-900 hover:bg-white/80'
+                  ? 'bg-white text-stone-900 shadow-xs font-semibold'
+                  : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/40 font-medium'
               }`}
-              title="TechTut Stage - TechTut Live Voice Engine"
+              title="TechTut Stage - Live Voice Engine"
             >
-              <Mic className="w-3.5 h-3.5 text-orange-600 group-hover:text-stone-900" />
-              <span>TechTut Stage</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+              <Mic className="w-3.5 h-3.5 text-stone-700" />
+              <span>Stage</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             </button>
 
             <button
               id="nav-games-mode"
               onClick={() => onSelectMode('games')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-all cursor-pointer ${
                 currentMode === 'games'
-                  ? 'bg-orange-500 text-white shadow-xs'
-                  : 'text-stone-600 hover:text-stone-900 hover:bg-white/80'
+                  ? 'bg-white text-stone-900 shadow-xs font-semibold'
+                  : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/40 font-medium'
               }`}
               title="TechTut Gamie - Games"
             >
-              <Gamepad2 className="w-3.5 h-3.5" />
-              <span>TechTut Gamie</span>
+              <Gamepad2 className="w-3.5 h-3.5 text-stone-700" />
+              <span>Gamie</span>
             </button>
 
             <button
               id="nav-quiz-mode"
               onClick={() => onSelectMode('quiz')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-all cursor-pointer ${
                 currentMode === 'quiz'
-                  ? 'bg-orange-500 text-white shadow-xs'
-                  : 'text-stone-600 hover:text-stone-900 hover:bg-white/80'
+                  ? 'bg-white text-stone-900 shadow-xs font-semibold'
+                  : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/40 font-medium'
               }`}
             >
-              <HelpCircle className="w-3.5 h-3.5" />
-              <span>Quiz Arena</span>
+              <HelpCircle className="w-3.5 h-3.5 text-stone-700" />
+              <span>Quiz</span>
+            </button>
+
+            <button
+              id="nav-workspace-mode"
+              onClick={() => onSelectMode('workspace')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-all cursor-pointer ${
+                currentMode === 'workspace'
+                  ? 'bg-white text-stone-900 shadow-xs font-semibold'
+                  : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/40 font-medium'
+              }`}
+            >
+              <GraduationCap className="w-3.5 h-3.5 text-stone-700" />
+              <span>Workspace</span>
             </button>
 
             <button
               id="nav-account-mode"
               onClick={() => onSelectMode('account')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all relative ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-all relative cursor-pointer ${
                 currentMode === 'account'
-                  ? 'bg-orange-500 text-white shadow-xs'
-                  : 'text-stone-600 hover:text-stone-900 hover:bg-white/80'
+                  ? 'bg-white text-stone-900 shadow-xs font-semibold'
+                  : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/40 font-medium'
               }`}
             >
-              <User className="w-3.5 h-3.5" />
+              <User className="w-3.5 h-3.5 text-stone-700" />
               <span>Account</span>
               {userEmail && (
                 <span 
@@ -184,155 +191,127 @@ export const Header: React.FC<HeaderProps> = ({
                 />
               )}
             </button>
-
-            <button
-              id="nav-workspace-mode"
-              onClick={() => onSelectMode('workspace')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                currentMode === 'workspace'
-                  ? 'bg-orange-500 text-white shadow-xs'
-                  : 'text-stone-600 hover:text-stone-900 hover:bg-white/80'
-              }`}
-            >
-              <GraduationCap className="w-3.5 h-3.5" />
-              <span>Workspace</span>
-            </button>
-
-            <button
-              id="nav-dev-blueprint"
-              onClick={() => onSelectMode('dev_blueprint')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                currentMode === 'dev_blueprint'
-                  ? 'bg-orange-500 text-white shadow-xs'
-                  : 'text-stone-600 hover:text-stone-900 hover:bg-white/80'
-              }`}
-              title="System Specs & Architecture"
-            >
-              <Code2 className="w-3.5 h-3.5" />
-              <span>Specs</span>
-            </button>
           </nav>
 
-          {/* Right Action Cluster: Education Level, Stardust, Streaks */}
-          <div className="flex items-center gap-2 sm:gap-2.5">
+          <div className="h-5 w-px bg-stone-200 shrink-0 hidden sm:block" />
 
-            {/* Educational Level Selector */}
-            <div className="relative">
-              <button
-                id="education-level-trigger"
-                onClick={() => setIsLevelOpen(!isLevelOpen)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-stone-50 border border-stone-200 text-stone-700 hover:border-orange-300 text-xs font-medium transition-all"
-              >
-                <GraduationCap className="w-3.5 h-3.5 text-orange-600" />
-                <span className="hidden sm:inline">{LEVEL_LABELS[educationLevel]}</span>
-                <ChevronDown className="w-3 h-3 text-stone-400" />
-              </button>
-
-              {isLevelOpen && (
-                <div 
-                  id="education-level-dropdown"
-                  className="absolute right-0 mt-2 w-52 bg-white border border-stone-200 rounded-2xl shadow-lg py-1.5 z-50 animate-in fade-in duration-150"
-                >
-                  <div className="px-3 py-1 text-[10px] font-bold text-stone-400 uppercase tracking-wider">
-                    Academic Level
-                  </div>
-                  {Object.entries(LEVEL_LABELS).map(([lvl, label]) => (
-                    <button
-                      key={lvl}
-                      onClick={() => {
-                        handleLevel(lvl as EducationLevel);
-                        setIsLevelOpen(false);
-                      }}
-                      className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between hover:bg-orange-50 transition-colors ${
-                        educationLevel === lvl ? 'text-orange-600 font-semibold bg-orange-50/60' : 'text-stone-700'
-                      }`}
-                    >
-                      <span>{label}</span>
-                      {educationLevel === lvl && <Sparkles className="w-3 h-3 text-orange-500" />}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Stardust points pill */}
-            <div 
-              id="stardust-stat"
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-orange-50 border border-orange-200 text-xs text-orange-700 font-semibold"
-              title={`${currentStardust} Stardust earned`}
-            >
-              <Sparkles className="w-3.5 h-3.5 text-orange-500" />
-              <span className="font-mono">{currentStardust}</span>
-            </div>
-
-            {/* Streak pill */}
-            <div 
-              id="streak-stat"
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800 font-semibold"
-              title={`${currentStreak} Day Study Streak`}
-            >
-              <Flame className="w-3.5 h-3.5 text-amber-500" />
-              <span className="font-mono">{currentStreak}d</span>
-            </div>
-
-            {/* Music Sanctuary Track Switcher Popup Trigger */}
+          {/* Educational Level Selector (Left Side) */}
+          <div className="relative shrink-0">
             <button
-              id="header-music-btn"
-              onClick={onOpenMusicPopup}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-orange-50 hover:bg-orange-100 border border-orange-200 text-orange-800 text-xs font-semibold transition-all cursor-pointer shadow-xs active:scale-95"
-              title="TechTut Harmony - for Music (Sound Sanctuary & Track Switcher)"
+              id="education-level-trigger"
+              onClick={() => setIsLevelOpen(!isLevelOpen)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-stone-100 hover:bg-stone-200/70 border border-stone-200/70 text-stone-700 text-xs font-medium transition-all cursor-pointer"
             >
-              <Headphones className="w-3.5 h-3.5 text-orange-600 animate-pulse" />
-              <span className="hidden sm:inline">Harmony</span>
+              <GraduationCap className="w-3.5 h-3.5 text-stone-600" />
+              <span className="hidden sm:inline">{LEVEL_LABELS[educationLevel]}</span>
+              <ChevronDown className="w-3 h-3 text-stone-400" />
             </button>
 
+            {isLevelOpen && (
+              <div 
+                id="education-level-dropdown"
+                className="absolute left-0 mt-2 w-52 bg-white border border-stone-200 rounded-2xl shadow-lg py-1.5 z-50 animate-in fade-in duration-150"
+              >
+                <div className="px-3 py-1 text-[10px] font-bold text-stone-400 uppercase tracking-wider">
+                  Academic Level
+                </div>
+                {Object.entries(LEVEL_LABELS).map(([lvl, label]) => (
+                  <button
+                    key={lvl}
+                    onClick={() => {
+                      handleLevel(lvl as EducationLevel);
+                      setIsLevelOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between hover:bg-orange-50 transition-colors cursor-pointer ${
+                      educationLevel === lvl ? 'text-orange-600 font-semibold bg-orange-50/60' : 'text-stone-700'
+                    }`}
+                  >
+                    <span>{label}</span>
+                    {educationLevel === lvl && <Sparkles className="w-3 h-3 text-orange-500" />}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
+
+          {/* Stardust points pill (Left Side) */}
+          <div 
+            id="stardust-stat"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-orange-50/80 border border-orange-200/80 text-xs text-orange-700 font-semibold shrink-0"
+            title={`${currentStardust} Stardust earned`}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-orange-500" />
+            <span className="font-mono">{currentStardust}</span>
+          </div>
+
+          {/* Streak pill (Left Side) */}
+          <div 
+            id="streak-stat"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-stone-100 border border-stone-200/70 text-xs text-stone-700 font-semibold shrink-0"
+            title={`${currentStreak} Day Study Streak`}
+          >
+            <Flame className="w-3.5 h-3.5 text-amber-500" />
+            <span className="font-mono">{currentStreak}d</span>
+          </div>
+
         </div>
 
         {/* Mobile bottom navigation bar */}
-        <div className="flex md:hidden items-center justify-around py-2 mt-2 rounded-2xl bg-white border border-stone-200 shadow-xs text-xs overflow-x-auto">
+        <div className="flex md:hidden items-center justify-around py-1.5 px-1 mt-2 rounded-2xl bg-white/95 backdrop-blur-md border border-stone-200/80 shadow-xs text-xs overflow-x-auto scrollbar-none">
           <button
             onClick={() => onSelectMode('study')}
-            className={`flex flex-col items-center py-1 px-2 ${currentMode === 'study' ? 'text-orange-600 font-semibold' : 'text-stone-500'}`}
+            className={`flex flex-col items-center justify-center py-1.5 px-2.5 min-h-[44px] rounded-xl transition-colors cursor-pointer shrink-0 ${
+              currentMode === 'study' ? 'text-orange-600 font-bold bg-orange-50/80' : 'text-stone-500 hover:text-stone-800'
+            }`}
           >
-            <Sparkles className="w-4 h-4" />
-            <span className="text-[10px] mt-0.5">Scholar</span>
+            <Sparkles className="w-4 h-4 text-orange-500" />
+            <span className="text-[10px] mt-0.5 whitespace-nowrap">Scholar Studio</span>
           </button>
           <button
             onClick={() => onSelectMode('live')}
-            className={`flex flex-col items-center py-1 px-2 relative ${currentMode === 'live' ? 'text-orange-600 font-semibold' : 'text-stone-500'}`}
+            className={`flex flex-col items-center justify-center py-1.5 px-2.5 min-h-[44px] rounded-xl relative transition-colors cursor-pointer shrink-0 ${
+              currentMode === 'live' ? 'text-orange-600 font-bold bg-orange-50/80' : 'text-stone-500 hover:text-stone-800'
+            }`}
           >
             <Mic className="w-4 h-4" />
-            <span className="text-[10px] mt-0.5">Stage</span>
-            <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            <span className="text-[10px] mt-0.5 whitespace-nowrap">Stage</span>
+            <span className="absolute top-1.5 right-2 w-1.5 h-1.5 rounded-full bg-emerald-500" />
           </button>
           <button
             onClick={() => onSelectMode('games')}
-            className={`flex flex-col items-center py-1 px-2 ${currentMode === 'games' ? 'text-orange-600 font-semibold' : 'text-stone-500'}`}
+            className={`flex flex-col items-center justify-center py-1.5 px-2.5 min-h-[44px] rounded-xl transition-colors cursor-pointer shrink-0 ${
+              currentMode === 'games' ? 'text-orange-600 font-bold bg-orange-50/80' : 'text-stone-500 hover:text-stone-800'
+            }`}
           >
             <Gamepad2 className="w-4 h-4" />
-            <span className="text-[10px] mt-0.5">Gamie</span>
+            <span className="text-[10px] mt-0.5 whitespace-nowrap">Gamie</span>
           </button>
           <button
             onClick={() => onSelectMode('quiz')}
-            className={`flex flex-col items-center py-1 px-2 ${currentMode === 'quiz' ? 'text-orange-600 font-semibold' : 'text-stone-500'}`}
+            className={`flex flex-col items-center justify-center py-1.5 px-2.5 min-h-[44px] rounded-xl transition-colors cursor-pointer shrink-0 ${
+              currentMode === 'quiz' ? 'text-orange-600 font-bold bg-orange-50/80' : 'text-stone-500 hover:text-stone-800'
+            }`}
           >
             <HelpCircle className="w-4 h-4" />
-            <span className="text-[10px] mt-0.5">Quiz</span>
+            <span className="text-[10px] mt-0.5 whitespace-nowrap">Quiz</span>
+          </button>
+          <button
+            onClick={() => onSelectMode('workspace')}
+            className={`flex flex-col items-center justify-center py-1.5 px-2.5 min-h-[44px] rounded-xl transition-colors cursor-pointer shrink-0 ${
+              currentMode === 'workspace' ? 'text-orange-600 font-bold bg-orange-50/80' : 'text-stone-500 hover:text-stone-800'
+            }`}
+          >
+            <GraduationCap className="w-4 h-4" />
+            <span className="text-[10px] mt-0.5 whitespace-nowrap">Workspace</span>
           </button>
           <button
             onClick={() => onSelectMode('account')}
-            className={`flex flex-col items-center py-1 px-2 ${currentMode === 'account' ? 'text-orange-600 font-semibold' : 'text-stone-500'}`}
+            className={`flex flex-col items-center justify-center py-1.5 px-2.5 min-h-[44px] rounded-xl transition-colors cursor-pointer shrink-0 ${
+              currentMode === 'account' ? 'text-orange-600 font-bold bg-orange-50/80' : 'text-stone-500 hover:text-stone-800'
+            }`}
           >
             <User className="w-4 h-4" />
-            <span className="text-[10px] mt-0.5">Account</span>
-          </button>
-          <button
-            onClick={() => onSelectMode('dev_blueprint')}
-            className={`flex flex-col items-center py-1 px-2 ${currentMode === 'dev_blueprint' ? 'text-orange-600 font-semibold' : 'text-stone-500'}`}
-          >
-            <Code2 className="w-4 h-4" />
-            <span className="text-[10px] mt-0.5">Specs</span>
+            <span className="text-[10px] mt-0.5 whitespace-nowrap">Account</span>
           </button>
         </div>
 

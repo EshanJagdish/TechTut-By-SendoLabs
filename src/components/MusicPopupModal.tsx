@@ -59,7 +59,7 @@ const PROMPT_PRESETS = [
   {
     title: 'Baroque Neural Focus',
     prompt: 'Delicate classical chamber strings interwoven with soft binaural alpha waves for deep memory consolidation',
-    model: 'lyria-3-pro-preview' as const,
+    model: 'lyria-3-clip-preview' as const,
   },
   {
     title: 'Quantum Lo-Fi',
@@ -85,7 +85,7 @@ export const MusicPopupModal: React.FC<MusicPopupModalProps> = ({
   // TechTut Harmony Generator State
   const [trackPrompt, setTrackPrompt] = useState('Warm ambient study focus soundscape with soft Rhodes chords and calm celestial resonance');
   const [trackTitle, setTrackTitle] = useState('Focus Symphony');
-  const [selectedModel, setSelectedModel] = useState<'lyria-3-clip-preview' | 'lyria-3-pro-preview'>('lyria-3-clip-preview');
+  const selectedModel = 'lyria-3-clip-preview' as const;
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
   const [generatedPreview, setGeneratedPreview] = useState<GeneratedMusicTrack | null>(null);
@@ -243,10 +243,10 @@ export const MusicPopupModal: React.FC<MusicPopupModalProps> = ({
         model: selectedModel,
         audioBase64: data.audioBase64 || generateClientProceduralWav(trackPrompt, 10),
         mimeType: data.mimeType || 'audio/wav',
-        duration: data.duration || (selectedModel === 'lyria-3-pro-preview' ? 'Full Track' : '30s'),
+        duration: data.duration || '30s',
         createdAt: Date.now(),
         lyrics: data.lyrics,
-        tags: [selectedModel === 'lyria-3-pro-preview' ? 'Lyria-Pro' : 'Lyria-Clip', 'Focus', 'TechTut'],
+        tags: ['Lyria-Clip', 'Focus', 'TechTut'],
       };
 
       setGeneratedPreview(newTrack);
@@ -259,7 +259,7 @@ export const MusicPopupModal: React.FC<MusicPopupModalProps> = ({
         model: selectedModel,
         audioBase64: generateClientProceduralWav(trackPrompt, 10),
         mimeType: 'audio/wav',
-        duration: selectedModel === 'lyria-3-pro-preview' ? 'Full Track' : '30s',
+        duration: '30s',
         createdAt: Date.now(),
         lyrics: `Harmonic focus synthesis generated for: "${trackPrompt}"`,
         tags: ['Procedural', 'Focus', 'TechTut'],
@@ -650,47 +650,25 @@ export const MusicPopupModal: React.FC<MusicPopupModalProps> = ({
                   </span>
                 </div>
 
-                {/* Model Selector */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedModel('lyria-3-clip-preview')}
-                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                      selectedModel === 'lyria-3-clip-preview'
-                        ? 'border-orange-500 bg-orange-500/15 text-white ring-1 ring-orange-500/40'
-                        : 'border-white/10 bg-stone-900/60 text-stone-300 hover:bg-stone-900'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-xs">Lyria 3 Clip</span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-orange-300 font-mono">
-                        Up to 30s
+                {/* Model Selector - Exclusively Lyria 3 Clip */}
+                <div className="pt-1">
+                  <div className="p-3.5 rounded-xl border border-orange-500/80 bg-orange-500/10 text-white ring-1 ring-orange-500/30">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-orange-400 animate-pulse" />
+                        <span className="font-bold text-xs">Lyria 3 Clip</span>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-300 font-semibold border border-orange-500/30">
+                          Active Focus Engine
+                        </span>
+                      </div>
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-white/10 text-orange-300 font-mono">
+                        30s Rhythm
                       </span>
                     </div>
-                    <p className="text-[11px] text-stone-400">
-                      Ideal for fast study loops, rhythmic momentum, and quick concept intervals.
+                    <p className="text-[11px] text-stone-300 leading-relaxed">
+                      Single optimized neural focus mode: produces rapid concept study intervals, calming ambient rhythm loops, and uninterrupted flow states.
                     </p>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setSelectedModel('lyria-3-pro-preview')}
-                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                      selectedModel === 'lyria-3-pro-preview'
-                        ? 'border-orange-500 bg-orange-500/15 text-white ring-1 ring-orange-500/40'
-                        : 'border-white/10 bg-stone-900/60 text-stone-300 hover:bg-stone-900'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-xs">Lyria 3 Pro</span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-orange-300 font-mono">
-                        Full Track
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-stone-400">
-                      Full-length high fidelity study compositions with progressive harmonic development.
-                    </p>
-                  </button>
+                  </div>
                 </div>
 
                 {/* Track Title */}
@@ -736,7 +714,6 @@ export const MusicPopupModal: React.FC<MusicPopupModalProps> = ({
                         onClick={() => {
                           setTrackTitle(p.title);
                           setTrackPrompt(p.prompt);
-                          setSelectedModel(p.model);
                         }}
                         className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-orange-500/20 hover:text-orange-300 text-stone-300 text-[11px] transition-colors cursor-pointer border border-white/5"
                       >
@@ -807,7 +784,7 @@ export const MusicPopupModal: React.FC<MusicPopupModalProps> = ({
                   {isGenerating ? (
                     <>
                       <RefreshCw className="w-4 h-4 animate-spin" />
-                      <span>TechTut Harmony is synthesizing {selectedModel === 'lyria-3-pro-preview' ? 'Lyria 3 Pro Track' : 'Lyria 3 Clip'}...</span>
+                      <span>TechTut Harmony is synthesizing Lyria 3 Clip...</span>
                     </>
                   ) : (
                     <>
