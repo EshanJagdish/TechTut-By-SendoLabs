@@ -7,7 +7,7 @@ The application is deployed and ready for use. Anyone can now access and test th
 ### 🌐 Access the App
 
 You can try out the application here:
-👉 **[Launch Tech Tut Public Beta](https://techtut.ai.studio/)** 
+👉 **[Launch Tech Tut](https://techtut.ai.studio/)** 
 
 If you want to sign in for More Testings, Fill in The Form Given Below:
 https://forms.gle/R25jwCmdm1sPDJY8A
