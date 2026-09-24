@@ -36,7 +36,8 @@ import {
   AddOnInsight, 
   DailyChallenge 
 } from './types';
-import { Sparkles, Award, Headphones } from 'lucide-react';
+import { Sparkles, Award, Headphones, Volume2 } from 'lucide-react';
+import { dreamyAudio } from './lib/audioSynthesizer';
 
 const INITIAL_PROFILE: UserProfile = {
   id: 'scholar_init',
@@ -159,6 +160,14 @@ export default function App() {
   // Reward Toast Notification state
   const [toastMessage, setToastMessage] = useState<{ title: string; subtitle: string; icon?: string } | null>(null);
   const [isMusicPopupOpen, setIsMusicPopupOpen] = useState<boolean>(false);
+  const [floatingVolume, setFloatingVolume] = useState(dreamyAudio.volume);
+
+  useEffect(() => {
+    const unsub = dreamyAudio.subscribe((state: any) => {
+      setFloatingVolume(state.volume);
+    });
+    return unsub;
+  }, []);
 
   // Sync with Firebase Firestore on boot & login + Local Scholar session protection
   useEffect(() => {
@@ -563,31 +572,42 @@ export default function App() {
         id="right-middle-music-pop" 
         className="fixed right-2 sm:right-5 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center"
       >
-        <button
-          onClick={() => setIsMusicPopupOpen(true)}
-          className="group flex flex-col items-center gap-1 sm:gap-1.5 p-2 sm:p-3 rounded-2xl bg-white/95 hover:bg-orange-50 border border-stone-200/90 hover:border-orange-300 shadow-xl backdrop-blur-md transition-all duration-200 cursor-pointer active:scale-95 touch-manipulation"
-          title="Open Music Sanctuary (Lyria 3 Clip)"
-        >
-          <div className="relative flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-orange-500 text-white shadow-md group-hover:scale-105 transition-transform">
-            <Headphones className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span className="absolute -top-1 -right-1 flex h-2 sm:h-2.5 w-2 sm:w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 sm:h-2.5 w-2 sm:w-2.5 bg-orange-500"></span>
+        <div className="flex flex-col items-center p-2 sm:p-2.5 rounded-2xl bg-white/95 hover:bg-white border border-stone-200/90 shadow-2xl backdrop-blur-md transition-all duration-200 space-y-2">
+          <button
+            onClick={() => setIsMusicPopupOpen(true)}
+            className="group flex flex-col items-center gap-1 cursor-pointer active:scale-95 touch-manipulation"
+            title="Open Music Sanctuary (Lyria 3 Clip)"
+          >
+            <div className="relative flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-orange-500 text-white shadow-md group-hover:scale-105 transition-transform">
+              <Headphones className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="absolute -top-1 -right-1 flex h-2 sm:h-2.5 w-2 sm:w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 sm:h-2.5 w-2 sm:w-2.5 bg-orange-500"></span>
+              </span>
+            </div>
+            <span className="text-[10px] sm:text-[11px] font-bold text-stone-800 group-hover:text-orange-600 transition-colors">
+              Music
             </span>
+          </button>
+
+          {/* Small Vertical Slider for Ambient Volume Control */}
+          <div className="flex flex-col items-center pt-1 pb-0.5 space-y-1 border-t border-stone-200/80 w-full">
+            <span className="text-[8px] font-mono text-stone-400 uppercase">Vol</span>
+            <div className="h-16 flex items-center justify-center">
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.05"
+                value={floatingVolume}
+                onChange={(e) => dreamyAudio.setVolume(parseFloat(e.target.value))}
+                className="w-16 accent-orange-500 cursor-pointer -rotate-90 transform"
+                title={`Ambient Music Volume: ${Math.round(floatingVolume * 100)}%`}
+              />
+            </div>
+            <span className="text-[8px] font-mono text-stone-500">{Math.round(floatingVolume * 100)}%</span>
           </div>
-          <span className="text-[10px] sm:text-[11px] font-bold text-stone-800 group-hover:text-orange-600 transition-colors">
-            Music
-          </span>
-          <span className="text-[8px] sm:text-[9px] font-mono text-stone-400 uppercase tracking-wider">
-            Pop
-          </span>
-          <div className="flex items-center gap-0.5 h-2.5 sm:h-3 px-0.5 sm:px-1 mt-0.5">
-            <span className="w-0.5 h-2 bg-orange-400 rounded-full animate-pulse" />
-            <span className="w-0.5 h-3 bg-orange-500 rounded-full animate-pulse delay-75" />
-            <span className="w-0.5 h-1.5 bg-orange-300 rounded-full animate-pulse delay-150" />
-            <span className="w-0.5 h-2.5 bg-orange-400 rounded-full animate-pulse delay-100" />
-          </div>
-        </button>
+        </div>
       </div>
 
     </div>

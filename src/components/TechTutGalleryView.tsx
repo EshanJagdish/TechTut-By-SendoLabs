@@ -106,7 +106,7 @@ export const TechTutGalleryView: React.FC<TechTutGalleryViewProps> = ({
     } else if (item.type === 'music') {
       const trackId = item.payload.musicTrack?.id || 'dreamy_starlight';
       dreamyAudio.setTrack(trackId);
-      dreamyAudio.resume();
+      dreamyAudio.play();
       setActiveAudioPlaying(trackId);
       onShowToast?.("Now Playing", item.title, "🎵");
     } else if (item.type === 'quiz') {

@@ -111,28 +111,32 @@ const SEED_GALLERY_ITEMS: GalleryItem[] = [
         createdAt: Date.now() - 86400000,
         status: 'lobby',
         settings: {
-          timePerQuestionSec: 45,
-          strictFullscreen: true,
+          title: 'Computer Science & AI Honors Benchmark',
+          subject: 'Computer Science',
+          timerMode: 'per_question',
+          timePerQuestionSeconds: 45,
+          totalTestMinutes: 10,
+          enforceFullScreen: true,
+          switchTabsMode: false,
           shuffleQuestions: true,
-          revealAnswersLive: true,
-          pointsPerCorrect: 100
+          passPercentage: 70
         },
         questions: [
           {
             id: 'q_1',
-            prompt: 'What is the average-case runtime complexity of quicksort with a randomized pivot?',
+            question: 'What is the average-case runtime complexity of quicksort with a randomized pivot?',
             options: ['O(n log n)', 'O(n^2)', 'O(n)', 'O(log n)'],
-            correctIndex: 0,
+            correctAnswerIndex: 0,
             explanation: 'Randomized quicksort splits subarrays evenly on average, yielding O(n log n) expected comparisons.',
-            timeLimitSec: 45
+            timeLimitSeconds: 45
           },
           {
             id: 'q_2',
-            prompt: 'In modern Transformer models, what mechanism allows tokens to compute contextual representations in parallel?',
+            question: 'In modern Transformer models, what mechanism allows tokens to compute contextual representations in parallel?',
             options: ['Multi-Head Self-Attention', 'Recurrent Hidden Backprop', 'Markov State Transition', 'K-Means Clustering'],
-            correctIndex: 0,
+            correctAnswerIndex: 0,
             explanation: 'Scaled Dot-Product Self-Attention computes pairwise token scores without sequential recurrence.',
-            timeLimitSec: 45
+            timeLimitSeconds: 45
           }
         ],
         participants: {},
@@ -153,33 +157,41 @@ const SEED_GALLERY_ITEMS: GalleryItem[] = [
     playCount: 5,
     payload: {
       studySolution: {
+        id: 'study_seed_1',
+        question: "Stokes' Theorem & Circulation Derivation",
         topic: "Multivariable Calculus: Stokes' Theorem",
         level: 'university',
-        summary: "The line integral of a vector field F around a closed boundary curve C equals the surface integral of the curl of F over any orientable surface S bounded by C: ∮_C F · dr = ∬_S (∇ × F) · dS.",
+        timestamp: Date.now(),
+        dreamySummary: "The line integral of a vector field F around a closed boundary curve C equals the surface integral of the curl of F over any orientable surface S bounded by C.",
+        conceptOrigin: "Vector Calculus",
         steps: [
           {
             stepNumber: 1,
             title: "Geometric Formulation & Orientation",
-            explanation: "Let S be a smooth oriented surface bounded by a piecewise-smooth simple closed curve C with positive orientation governed by the right-hand rule.",
-            mathSnippet: "\\oint_{\\partial S} \\mathbf{F} \\cdot d\\mathbf{r} = \\iint_S (\\nabla \\times \\mathbf{F}) \\cdot d\\mathbf{S}"
+            explanation: "Let S be a smooth oriented surface bounded by a piecewise-smooth simple closed curve C with positive orientation."
           },
           {
             stepNumber: 2,
             title: "Decomposition into Planar Rectangles",
-            explanation: "Subdivide S into infinitesimal coordinate patches. Apply Green's Theorem to each microscopic loop. Internal line segments cancel each other out.",
-            mathSnippet: "\\sum_{i} \\oint_{C_i} \\mathbf{F} \\cdot d\\mathbf{r} = \\oint_C \\mathbf{F} \\cdot d\\mathbf{r}"
+            explanation: "Subdivide S into infinitesimal coordinate patches. Apply Green's Theorem to each microscopic loop."
           },
           {
             stepNumber: 3,
             title: "Curl Density as Microscopic Circulation",
-            explanation: "As area ΔA -> 0, circulation per unit area is the normal component of curl: (∇ × F) · n.",
-            mathSnippet: "(\\nabla \\times \\mathbf{F}) \\cdot \\mathbf{n} = \\lim_{\\Delta A \\to 0} \\frac{1}{\\Delta A} \\oint \\mathbf{F} \\cdot d\\mathbf{r}"
+            explanation: "As area ΔA -> 0, circulation per unit area is the normal component of curl."
           }
         ],
+        followUpQuestions: [],
+        flashcards: [],
+        extraTips: [],
+        memoryTricks: [],
+        practiceQuestions: [],
         recommendations: {
+          breakPacing: '25 min study, 5 min break',
+          studyRhythm: 'Deep Mathematical Flow',
           recommendedMood: 'Deep Mathematical Flow',
           ambientSoundtrack: 'Alpha Waves & 432Hz Calm',
-          circadianTiming: 'Peak Morning Cognitive Window'
+          hydrationTip: 'Stay hydrated'
         }
       }
     }

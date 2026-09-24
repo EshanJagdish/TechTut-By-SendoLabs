@@ -506,6 +506,32 @@ class DreamyAudioEngine {
     }
     this.notify();
   }
+
+  public resume() {
+    this.ensureContext();
+    if (!this.isPlaying) {
+      this.play();
+    }
+  }
+
+  public playChime(freq: number = 440) {
+    try {
+      this.ensureContext();
+      if (!this.ctx || !this.masterGain) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+      gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 1.2);
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 1.3);
+    } catch (e) {
+      console.warn('playChime error:', e);
+    }
+  }
 }
 
 export const dreamyAudio = new DreamyAudioEngine();

@@ -224,8 +224,8 @@ export const TechTutLiveView: React.FC<TechTutLiveViewProps> = ({
     if (!cleanSpeech) return;
 
     const utterance = new SpeechSynthesisUtterance(cleanSpeech);
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
+    utterance.rate = 1.02;
+    utterance.pitch = 1.05;
     
     // Professor Vance normal voice
     const voices = synthRef.current.getVoices();
