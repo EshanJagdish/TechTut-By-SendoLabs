@@ -1,6 +1,6 @@
 {
-  "name": "TechTut V2.5 by SendoLabs",
-  "description": "Your AI study desk online with TechTut Live voice tutor, Friend Codes network, and proctored quiz arena",
+  "name": "TechTut AI Studio",
+  "description": "Your AI study desk online with TechTut AI Studio, Live voice tutor, Friend Codes network, and proctored quiz arena",
   "requestFramePermissions": ["microphone"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
